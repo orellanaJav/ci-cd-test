@@ -12,6 +12,6 @@ jobs:
        uses: actions/checkout@v1
      - name: Test file
        run: |
-          python stack_project_1/services/project_1/lambda_1/test_name_function.py
+          python stack_project/services/lambda_1/core/controllers/test_formatted_name.py
   
     
