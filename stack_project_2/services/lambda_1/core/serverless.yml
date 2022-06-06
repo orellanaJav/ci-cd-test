@@ -1,0 +1,17 @@
+service: lambda-1
+
+frameworkVersion: '3'
+
+custom:
+  stackName: stack-2
+  baseName: ${opt:stage}-${self:custom.stackName}-${self:service}
+
+provider:
+  name: aws
+  runtime: python3.9
+  environment: ${file(../setup/${opt:stage, 'dev'}/env_variables.json)}    
+
+functions:
+  hello:
+    handler: lambda_1.hello
+    name: ${self:custom.baseName}
