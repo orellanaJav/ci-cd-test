@@ -3,7 +3,8 @@ from controllers.formatted_name import get_formatted_name
 from settings.config import ANOTHER_KEY
 
 
-def hello(event, lambda_context):            
+def hello(event, lambda_context):
+    print('hola')
     first_name = event.get('first_name', '')
     middle_name = event.get('middle_name', '')
     last_name = event.get('last_name', '')

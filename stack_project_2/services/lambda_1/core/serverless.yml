@@ -1,4 +1,4 @@
-service: lambda-1
+service: lambda-1-1
 
 frameworkVersion: '3'
 
@@ -12,6 +12,6 @@ provider:
   environment: ${file(../setup/${opt:stage, 'dev'}/env_variables.json)}    
 
 functions:
-  hello:
+  hello-2:
     handler: lambda_1.hello
     name: ${self:custom.baseName}
