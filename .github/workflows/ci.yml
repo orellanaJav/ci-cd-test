@@ -1,9 +1,16 @@
 name: Test CI
 on:
+  push:
+    branches:
+    - dev
+    - release
+    - main
   pull_request:
     branches:
-     - dev
-
+    - dev
+    - release
+    - main
+  
 jobs:
   run-unit-tests:
    runs-on: ubuntu-latest
@@ -13,5 +20,17 @@ jobs:
      - name: Test file
        run: |
           python stack_project/services/lambda_1/core/controllers/test_formatted_name.py
+
+  send-slack-message:
+    runs-on: ubuntu-latest
+    needs: ["run-unit-tests"]
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: send a slack message
+        uses: docker://technosophos/slack-notify
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_MESSAGE: 'Ready to merge'
+
   
     
