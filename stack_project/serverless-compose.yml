@@ -3,3 +3,4 @@ services:
     path: services/lambda_1/core
   project-2:
     path: services/lambda_2/core
+
