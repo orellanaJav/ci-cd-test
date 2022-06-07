@@ -1,10 +1,5 @@
 name: Test CI
 on:
-  push:
-    branches:
-    - dev
-    - release
-    - main
   pull_request:
     branches:
     - dev
