@@ -9,7 +9,12 @@ custom:
 provider:
   name: aws
   runtime: python3.9
-  environment: ${file(../setup/${opt:stage, 'dev'}/env_variables.json)}    
+  environment: ${file(../setup/${opt:stage, 'dev'}/env_variables.json)}
+
+resources:
+  Resources:
+    ${file(../../../setup/resources/dynamo.yml)}
+
 
 functions:
   hello:
