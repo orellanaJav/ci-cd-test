@@ -7,6 +7,9 @@ custom:
   baseName: ${opt:stage}-${self:custom.stackName}-${self:service}
 
 provider:
+  s3:
+    bucketOne:
+      name: my-custom-bucket-name
   name: aws
   runtime: python3.9
   environment: ${file(../setup/${opt:stage, 'dev'}/env_variables.json)}
