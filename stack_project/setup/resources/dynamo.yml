@@ -15,4 +15,4 @@ usersTable:
 S3Assets:
   Type: AWS::S3::Bucket
   Properties:
-    BucketName: ${self:service}-${self:provider.stage}-assets
+    BucketName: test-assets
