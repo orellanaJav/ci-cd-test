@@ -30,6 +30,7 @@ jobs:
         uses: docker://technosophos/slack-notify
         env:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+<<<<<<< HEAD
           SLACK_MESSAGE: 'Ready to merge'
 
   
@@ -44,4 +45,7 @@ jobs:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_MESSAGE: 'Ready to merge'
   
+=======
+          SLACK_MESSAGE: 'Ready to merge'  
+>>>>>>> 225aae2d3ac33ea5609a3808838b28e86620dea2
     
