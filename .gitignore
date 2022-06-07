@@ -132,5 +132,4 @@ dmypy.json
 node_modules
 
 # serverless
-
 .serverless
