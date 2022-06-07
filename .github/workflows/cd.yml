@@ -39,7 +39,7 @@ jobs:
               directory="$( echo $path | cut -d'/' -f1 -s )"
 
             # ignore .github folder
-            if [[ "$directory" != ".github" && "$path" != "" ]]; then
+            if [[ "$directory" != ".github" && "$directory" != "" ]]; then
               # Add build to the matrix only if it is not already included
               JSONline="\"$directory\","
               if [[ "$JSON" != *"$JSONline"* ]]; then
