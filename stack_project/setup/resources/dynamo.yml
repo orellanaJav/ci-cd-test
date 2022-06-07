@@ -11,3 +11,8 @@ usersTable:
     ProvisionedThroughput:
       ReadCapacityUnits: 1
       WriteCapacityUnits: 1
+
+S3Assets:
+  Type: AWS::S3::Bucket
+  Properties:
+    BucketName: ${self:service}-${self:provider.stage}-assets
