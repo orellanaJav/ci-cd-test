@@ -131,8 +131,4 @@ dmypy.json
 # node modules
 node_modules
 
-<<<<<<< HEAD
-=======
-# serverless
->>>>>>> 225aae2d3ac33ea5609a3808838b28e86620dea2
 .serverless
