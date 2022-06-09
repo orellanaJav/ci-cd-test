@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - 'dev'
+      - 'crafting'
 
 jobs: 
   changes:
