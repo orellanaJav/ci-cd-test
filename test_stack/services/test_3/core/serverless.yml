@@ -1,0 +1,19 @@
+custom:
+  baseName: ${opt:stage}-${self:custom.stackName}-${self:service}
+  stackName: test-stack
+frameworkVersion: '3'
+functions:
+  test_3:
+    handler: test_3.lambda_handler
+    name: ${self:custom.baseName}
+package:
+  individually: true
+  patterns:
+  - '!resources/*.yml'
+provider:
+  environment: ${file(../setup/${opt:stage, 'dev'}/env_variables.json)}
+  name: aws
+  runtime: python3.9
+resources:
+- ${file(resources/dynamo.yml)}
+service: test-stack-test-3
