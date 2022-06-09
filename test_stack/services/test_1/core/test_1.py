@@ -26,4 +26,5 @@ def lambda_handler(event: dict, context: dict) -> dict:
         - 2022.06.09
     """
     logger.basic_loader(**event)
+
     return {'status': 'status'}

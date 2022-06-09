@@ -75,16 +75,6 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
-      - name: Set up Python
-        uses: actions/setup-python@v3
-        with:
-          python-version: '3.9'                  
-      - run: |
-          pwd
-          ls -la
-          cd ${{ matrix.folder }}
-          pip install pyyaml
-          python3.9 merge_yml_files.py
       - name: deploy
         working-directory: ${{ matrix.folder }}
         run: npx serverless deploy
