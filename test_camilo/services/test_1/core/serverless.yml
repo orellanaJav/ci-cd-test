@@ -1,0 +1,19 @@
+custom:
+  baseName: ${self:custom.stackName}-test_1
+  stackName: test-camilo
+frameworkVersion: '3'
+functions:
+  test_1:
+    handler: test_1.lambda_handler
+    name: ${self:custom.baseName}
+package:
+  individually: true
+  patterns:
+  - '!resources/*.yml'
+provider:
+  environment: ${file(../setup/${opt:stage, 'dev'}/env_variables.json)}
+  name: aws
+  runtime: python3.9
+resources:
+- ${file(resources/dynamo.yml)}
+service: test-camilo-test-1
