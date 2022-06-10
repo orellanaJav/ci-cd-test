@@ -1,10 +1,10 @@
-service: test-stack-test-1
+service: test-stack-1-test-3
 
 frameworkVersion: '3'
 
 custom:
-  stackName: test-stack
-  baseName: ${self:custom.stackName}-test_1
+  stackName: test-stack-1
+  baseName: ${self:custom.stackName}-test_3
 
 provider:
   name: aws
@@ -17,8 +17,7 @@ package:
     - '!resources/*.yml'
 
 functions:
-  test_1:
-    handler: test_1.lambda_handler
+  test_3:
+    handler: test_3.lambda_handler
     name: ${self:custom.baseName}
-    layers: ${file(../setup/${opt:stage, 'dev'}/layers.json)}
 
