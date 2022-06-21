@@ -38,10 +38,10 @@ jobs:
               # Set $directory to substring before /
               directory="$( echo $path | cut -d'/' -f1 -s )"
 
-              is_requirements_update = 0
-              if [[ $path == *"requirements"* ]]; then
-                is_requirements_update = 1
-              fi
+              is_requirements_update=0
+              # if [[ $path == *"requirements"* ]]; then
+              #   is_requirements_update = 1
+              # fi
               echo "$is_requirements_update"
 
             # ignore .github folder

@@ -29,4 +29,7 @@ def lambda_handler(event: dict, context: dict) -> dict:
     print(a)
     print(a)
     print(a)
+    print(a)
+    print(a)
+    print(a)
     return {'status': 'status'}
