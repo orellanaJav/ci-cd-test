@@ -1,0 +1,8 @@
+{
+    "ENVIRONMENT": {
+        "hola": 123
+    },
+    "LAYERS": [],
+    "REGION": "sa-east-1",
+    "VPC": {}
+}

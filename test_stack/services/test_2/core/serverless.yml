@@ -1,15 +1,14 @@
-service: test-stack-test-1
+service: test-stack-test-2
 
 frameworkVersion: '3'
 
 plugins:
   - serverless-deployment-bucket
-  # - serverless-python-requirements
 
 custom:
-  baseName: ${self:custom.stackName}-test_1
-  runtime: ${param:runtime, "python3.9"}
   stackName: test-stack
+  baseName: ${self:custom.stackName}-test_2
+  runtime: ${param:runtime, "python3.9"}
 
 provider:
   deploymentBucket:
@@ -25,9 +24,9 @@ package:
     - '!resources/*.yml'
 
 functions:
-  test_1:
+  test_2:
     description: 
-    handler: test_1.lambda_handler
+    handler: test_2.lambda_handler
     layers: ${file(../setup/${opt:stage, 'dev'}/config.json):LAYERS}
     name: ${self:custom.baseName}
 

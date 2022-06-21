@@ -1,4 +1,4 @@
-import numpy as np
+from settings.config import logger
 
 __version__ = '0.1.0'
 
@@ -25,7 +25,5 @@ def lambda_handler(event: dict, context: dict) -> dict:
     :Created:
         - 2022.06.20
     """
-    a = np.arange(15).reshape(3, 5)
-	
-    print(a)
+    logger.basic_loader(**event)
     return {'status': 'status'}
