@@ -35,8 +35,12 @@ jobs:
             JSON="["
             # Loop by lines
             while read path; do
-              # Set $directory to substring before /
-              directory="$( echo $path | cut -d'/' -f1 -s )"
+              # Set $stack to substring before /
+              stack="$( echo $path | cut -d'/' -f1 -s )"
+              lambda="$( echo $path | cut -d'/' -f3 -s )"
+
+              echo "$lambda"
+
 
               is_requirements_update=0
               if [[ $path == *"requirements"* ]]; then
@@ -45,9 +49,9 @@ jobs:
               echo "$is_requirements_update"
 
             # ignore .github folder
-            if [[ "$directory" != ".github" ]]; then
+            if [[ "$stack" != ".github" ]]; then
               # Add build to the matrix only if it is not already included
-              JSONline="\"$directory\","
+              JSONline="\"$stack\","
               if [[ "$JSON" != *"$JSONline"* ]]; then
                 JSON="$JSON$JSONline"
               fi
