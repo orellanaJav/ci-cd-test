@@ -6,7 +6,10 @@ from yaml import FullLoader
 if __name__ == '__main__':
     with open('serverless.yml') as file:
         resource_data = load(file, Loader=FullLoader)
-        print(resource_data)
+        file.close()
+    print(resource_data)
+    with open('serverless.yml', 'w') as file:
         resource_data['plugins'].remove('serverless-python-requirements')
-        dump(resource_data, 'serverless.yml')
-        print(resource_data)
+        serverless = dump(resource_data, file)        
+        file.close()
+    print(resource_data)
