@@ -233,7 +233,6 @@ jobs:
             """
       
       - name: Install Dependencies
-        working-directory: ${{ matrix.stack.stack_name }}
         run: npm install        
 
       - name: Deploy All Stack
