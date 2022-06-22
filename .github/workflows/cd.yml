@@ -5,6 +5,8 @@ on:
     branches:
       - 'crafting'
       - 'dev'
+      - 'main'
+      - 'release'      
 
 jobs:
   get-stage-and-region:
