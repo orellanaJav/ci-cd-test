@@ -11,7 +11,7 @@ jobs:
     name: Get Stacks
     runs-on: ubuntu-latest
     outputs:
-      stacks: ${{ steps.get-stacks.outputs.stacks }}
+      listStacks: ${{ steps.get-stacks.outputs.listStacks }}
     steps:
       - uses: actions/checkout@v2
       - name: Configure AWS Credentials
@@ -24,7 +24,8 @@ jobs:
         id: get-stacks
         run: |
           STACKS=$( aws cloudformation list-stacks --stack-status-filter CREATE_IN_PROGRESS CREATE_COMPLETE ROLLBACK_IN_PROGRESS ROLLBACK_FAILED ROLLBACK_COMPLETE DELETE_IN_PROGRESS DELETE_FAILED UPDATE_IN_PROGRESS UPDATE_COMPLETE_CLEANUP_IN_PROGRESS UPDATE_COMPLETE UPDATE_ROLLBACK_IN_PROGRESS UPDATE_ROLLBACK_FAILED UPDATE_ROLLBACK_COMPLETE_CLEANUP_IN_PROGRESS UPDATE_ROLLBACK_COMPLETE REVIEW_IN_PROGRESS | jq '.StackSummaries[].StackName' | jq -s )
-          echo "::set-output name=stacks::$( echo "$STACKS" )"
+          echo "::set-output name=listStacks::$( echo "$STACKS" )"
+          echo "$STACKS"
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -50,7 +51,7 @@ jobs:
         id: filter
         run: |
           DIFF="${{ steps.diff.outputs.diff }}"
-          STACKS="${{ needs.stacks.outputs.stacks }}"
+          STACKS="${{ needs.stacks.outputs.listStacks }}"
           echo "$STACKS"
           echo "$DIFF"
 
