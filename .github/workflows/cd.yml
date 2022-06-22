@@ -174,13 +174,11 @@ jobs:
             echo "::set-output name=stack::$( echo "$json_stack" )"
           fi
   deploy:
-    needs: [changes, stacks]
+    needs: [get-stage-and-region, changes, stacks]
     name: Deploy
     if: ${{ needs.changes.outputs.stack != '[]' && needs.changes.outputs.stack != '' }}
     strategy:
       matrix:
-        # Parse JSON array containing names of all filters matching any of changed files
-        # e.g. ['servicea', 'serviceb'] if both package folders contains changes
         stack: ${{ fromJSON(needs.changes.outputs.stack) }}
     runs-on: ubuntu-latest
     steps:
@@ -203,12 +201,16 @@ jobs:
 
       - name: Deploy All Stack
         working-directory: ${{ matrix.stack.stack_name }}
-        run: echo "${{ matrix.stack.stack_name }}"
+        run: |
+          STAGE="${{ needs.get-stage-and-region.outputs.stage }}"
+          npx serverless deploy --stage $STAGE
         if: ${{ matrix.stack.fullDeploy == 'true' }}
       
       - name: Deploy Only Function
         working-directory: ${{ matrix.stack.stack_name }}/services/${{ matrix.stack.lambda }}/core
-        run: npx serverless deploy -f ${{ matrix.stack.lambda }}
+        run: |
+          STAGE="${{ needs.get-stage-and-region.outputs.stage }}"          
+          npx serverless deploy -f ${{ matrix.stack.lambda }} --stage $STAGE
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
