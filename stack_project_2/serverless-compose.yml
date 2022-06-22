@@ -1,3 +1,0 @@
-services:
-  project-2:
-    path: services/lambda_1/core

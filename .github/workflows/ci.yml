@@ -8,7 +8,7 @@ on:
      - crafting
 
 jobs:
-  test:
+  get-pr-link:
     runs-on: ubuntu-latest
     outputs:
       link: ${{ steps.get-link-pr.outputs.link }}      
@@ -16,30 +16,19 @@ jobs:
       - name: test PR
         id: get-link-pr
         run: |
-          echo "HOME ${HOME}"
-          echo "GITHUB_WORKFLOW ${GITHUB_WORKFLOW}"
-          echo "GITHUB_ACTION ${GITHUB_ACTION}"
-          echo "GITHUB_ACTIONS ${GITHUB_ACTIONS}"
-          echo "GITHUB_ACTOR ${GITHUB_ACTOR}"
-          echo "GITHUB_REPOSITORY ${GITHUB_REPOSITORY}"
-          echo "GITHUB_EVENT_NAME ${GITHUB_EVENT_NAME}"
-          echo "GITHUB_WORKSPACE ${GITHUB_WORKSPACE}"
-          echo "GITHUB_SHA ${GITHUB_SHA}"
-          echo "GITHUB_REF ${GITHUB_REF}"
-          echo "PR NUMBER ${{ github.event.number }}"
           LINK="https://github.com/${GITHUB_REPOSITORY}/pull/${{ github.event.number }}"
           echo "::set-output name=link::$( echo "$LINK" )"          
   send-slack-message:
     runs-on: ubuntu-latest
-    needs: ["test"]
+    needs: ["get-pr-link"]
     steps:
       - uses: actions/checkout@v2
       - name: send a slack message
         uses: ./.github/actions/slack
         with:
           slack_webhook: ${{ secrets.SLACK_WEBHOOK }}
-          title: Creación de PR para CR
-          message: "Se ha creado el <${{ needs.test.outputs.link }}|siguiente> PR :pr: :smile:"
+          title: ":pr: Creación de PR para CR"
+          message: "Se ha creado el <${{ needs.get-pr-link.outputs.link }}|siguiente> PR :point-left:"
   # run-unit-tests:
   #  runs-on: ubuntu-latest
   #  steps:
