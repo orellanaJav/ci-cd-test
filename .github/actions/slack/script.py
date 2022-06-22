@@ -2,13 +2,11 @@ import json
 import sys
 import requests
 if __name__ == '__main__':
-    print('-----> ', sys.argv)
-    slack_message_data = sys.argv[-1]
-    slack_message_data = slack_message_data.replace('\'', '"')
-    slack_message_data = json.loads(slack_message_data)
-    url = 'https://hooks.slack.com/services/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'
-    message = slack_message_data.get('message', 'mensaje por defecto')
-    title = slack_message_data.get('title', 'titulo por defecto')
+    print('-----> ', sys.argv[-1])
+    print('-----> ', sys.argv[-2])
+    url = str(sys.argv[-2])
+    message = str(sys.argv[-1])
+    title = 'Test Título'
     slack_data = {
         'username': 'NotificationBot',
         'icon_emoji': ':satellite:',
