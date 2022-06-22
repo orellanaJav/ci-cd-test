@@ -47,8 +47,8 @@ jobs:
       - name: Get Stage And Region
         id: stage-and-region
         run: |
-          STAGE=env.STAGE
-          REGION=env.REGION
+          STAGE="${{ env.STAGE }}"
+          REGION="${{ env.REGION }}"
           echo "::set-output name=stage::$( echo "$STAGE" )"
           echo "::set-output name=region::$( echo "$REGION" )"
 
