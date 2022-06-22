@@ -38,8 +38,8 @@ jobs:
         uses: ./.github/actions/slack
         with:
           slack_webhook: ${{ secrets.SLACK_WEBHOOK }}
-          message: ${{ needs.test.outputs.link }}
-          title: Despliegue
+          title: Creación de PR para CR
+          message: Se ha creado el <${{ needs.test.outputs.link }}|siguiente> PR
   # run-unit-tests:
   #  runs-on: ubuntu-latest
   #  steps:
