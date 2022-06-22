@@ -233,7 +233,7 @@ jobs:
         working-directory: ${{ matrix.stack.stack_name }}
         run: |
           STAGE="${{ needs.get-stage-and-region.outputs.stage }}"
-          npx serverless deploy --service=${{ matrix.stack.stack_name }} --stage $STAGE
+          npx serverless deploy --service=${{ matrix.stack.lambda }} --stage $STAGE
         if: ${{ matrix.stack.fullDeploy == 'true' }}
       
       - name: Deploy Only Function
