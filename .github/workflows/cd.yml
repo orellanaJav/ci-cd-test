@@ -187,12 +187,12 @@ jobs:
       - uses: actions/checkout@v2
       - name: Configure AWS Credentials
       - uses: aws-actions/configure-aws-credentials@v1
-      - uses: actions/setup-python@v4
+      # - uses: actions/setup-python@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
-          python-version: '3.9'
+          # python-version: '3.9'
 
       - name: Install Dependencies
         working-directory: ${{ matrix.stack.stack_name }}
