@@ -134,7 +134,7 @@ jobs:
 
             # ignore .github folder
             if [[ "$stack" != ".github" ]]; then
-              if [[ $STACKS == *"$stack_cloudfront"* ]]; then
+              if [[ $STACKS != *"$stack_cloudfront"* ]]; then
                 MAKE_FULL_DEPLOY=true
               fi
               echo el stack "$stack_cloudfront"
@@ -145,7 +145,7 @@ jobs:
               fi
               TEST=[{\"stack\":\"$stack\",\"fullDeploy\":\"$MAKE_FULL_DEPLOY\"}]
               
-              echo "$TEST"
+              echo "$TEST" | jq
               JSONline="\"$stack\","
               if [[ "$JSON" != *"$JSONline"* ]]; then
                 JSON="$JSON$JSONline"
