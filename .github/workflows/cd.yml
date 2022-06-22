@@ -27,7 +27,7 @@ jobs:
 
       - name: Set Region For Crafting
         run: |
-          echo "STAGE=crafting" >> $GITHUB_ENV
+          echo "STAGE=dev" >> $GITHUB_ENV
           echo "REGION=${{ secrets.CRAFTING_REGION }}" >> $GITHUB_ENV
         if: ${{ steps.extract_current_branch.outputs.branch == 'crafting' }}
 
@@ -132,13 +132,17 @@ jobs:
               stack_cloudfront="$stack_mid_dash-$lambda_mid_dash-$STAGE"
 
 
-              echo "$stack_cloudfront"
+              is_stack_lambda_deployed=false
+              if [[ $STACKS == *"$stack_cloudfront"* ]]; then
+                is_stack_lambda_deployed=true
+              fi
+              echo is deployed ? "$is_stack_lambda_deployed"
 
 
 
-              is_requirements_update=0
+              is_requirements_update=false
               if [[ $path == *"requirements"* ]]; then
-                is_requirements_update=1
+                is_requirements_update=true
               fi
               echo "$is_requirements_update"
 
