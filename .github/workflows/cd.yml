@@ -21,29 +21,28 @@ jobs:
 
       - name: Set Region For Dev
         run: |
-          env.STAGE='dev'
-          env.REGION='sa-east-1'                    
+          echo "STAGE=dev" >> $GITHUB_ENV
+          echo "REGION=${{ secrets.DEV_REGION }}" >> $GITHUB_ENV
         if: ${{ steps.extract_current_branch.outputs.branch == 'dev' }}
 
       - name: Set Region For Crafting
         run: |
           echo "STAGE=crafting" >> $GITHUB_ENV
-          echo "REGION=sa-east-1" >> $GITHUB_ENV
+          echo "REGION=${{ secrets.CRAFTING_REGION }}" >> $GITHUB_ENV
         if: ${{ steps.extract_current_branch.outputs.branch == 'crafting' }}
 
       - name: Set Region For Release
         run: |
-          env.STAGE='release'
-          env.REGION='sa-east-1'                    
+          eecho "STAGE=release" >> $GITHUB_ENV
+          echo "REGION=${{ secrets.RELEASE_REGION }}" >> $GITHUB_ENV
         if: ${{ steps.extract_current_branch.outputs.branch == 'release' }}
 
       - name: Set Region For Production
         run: |
-          env.STAGE='production'
-          env.REGION='sa-east-1'                    
+          echo "STAGE=prod" >> $GITHUB_ENV
+          echo "REGION=${{ secrets.PROD_REGION }}" >> $GITHUB_ENV
         if: ${{ steps.extract_current_branch.outputs.branch == 'main' }}
-      - name: print region
-        run: echo "${{ env.REGION }}"
+
       - name: Get Stage And Region
         id: stage-and-region
         run: |
@@ -71,8 +70,7 @@ jobs:
         run: |                    
           STAGE="${{ needs.get-stage-and-region.outputs.stage }}"
           REGION="${{ needs.get-stage-and-region.outputs.region }}"
-          echo "$STAGE"
-          echo "$REGION"
+
           STACKS=$( aws cloudformation list-stacks --stack-status-filter CREATE_IN_PROGRESS CREATE_COMPLETE ROLLBACK_IN_PROGRESS ROLLBACK_FAILED ROLLBACK_COMPLETE DELETE_IN_PROGRESS DELETE_FAILED UPDATE_IN_PROGRESS UPDATE_COMPLETE_CLEANUP_IN_PROGRESS UPDATE_COMPLETE UPDATE_ROLLBACK_IN_PROGRESS UPDATE_ROLLBACK_FAILED UPDATE_ROLLBACK_COMPLETE_CLEANUP_IN_PROGRESS UPDATE_ROLLBACK_COMPLETE REVIEW_IN_PROGRESS | jq '.StackSummaries[].StackName')
           JSON="["
           while read stack; do
@@ -96,7 +94,7 @@ jobs:
   changes:
     name: Changes
     runs-on: ubuntu-latest
-    needs: stacks
+    needs: [stacks, get-stage-and-region]
     outputs:
       folders: ${{ steps.filter.outputs.folders }}
     steps:
@@ -115,6 +113,8 @@ jobs:
         run: |
           DIFF="${{ steps.diff.outputs.diff }}"
           STACKS="${{ needs.stacks.outputs.listStacks }}"
+          STAGE="${{ needs.get-stage-and-region.outputs.stage }}"
+          REGION="${{ needs.get-stage-and-region.outputs.region }}"
           echo "$STACKS"
           echo "$DIFF"
 
@@ -126,9 +126,14 @@ jobs:
             while read path; do
               # Set $stack to substring before /
               stack="$( echo $path | cut -d'/' -f1 -s )"
+              stack_mid_dash="$( echo $stack | tr _ - )"
               lambda="$( echo $path | cut -d'/' -f3 -s )"
+              lambda_mid_dash="$( echo $lambda | tr _ - )"
+              stack_cloudfront="$stack_mid_dash-$lambda_mid_dash-$STAGE"
 
-              echo "$lambda"
+
+              echo "$stack_cloudfront"
+
 
 
               is_requirements_update=0
