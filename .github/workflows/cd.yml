@@ -6,8 +6,8 @@ on:
       - 'dev'
       - 'crafting'
 env:
-  STAGE: dev
-  REGION: sa-east-1
+  STAGE: prueba
+  REGION: holahola
 
 
 jobs:
@@ -65,7 +65,9 @@ jobs:
         id: idStacks
         run: |          
           STAGE=${{ env.STAGE }}
+          REGION=${{ env.REGION }}
           echo "$STAGE"
+          echo "$REGION"
           STACKS=$( aws cloudformation list-stacks --stack-status-filter CREATE_IN_PROGRESS CREATE_COMPLETE ROLLBACK_IN_PROGRESS ROLLBACK_FAILED ROLLBACK_COMPLETE DELETE_IN_PROGRESS DELETE_FAILED UPDATE_IN_PROGRESS UPDATE_COMPLETE_CLEANUP_IN_PROGRESS UPDATE_COMPLETE UPDATE_ROLLBACK_IN_PROGRESS UPDATE_ROLLBACK_FAILED UPDATE_ROLLBACK_COMPLETE_CLEANUP_IN_PROGRESS UPDATE_ROLLBACK_COMPLETE REVIEW_IN_PROGRESS | jq '.StackSummaries[].StackName')
           JSON="["
           while read stack; do
