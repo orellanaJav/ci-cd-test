@@ -228,6 +228,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: ["deploy"]
     steps:
+      - uses: actions/checkout@v2
       - name: send a slack message
         uses: ./.github/actions/slack
         with:
