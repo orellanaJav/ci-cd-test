@@ -1,7 +1,11 @@
 FROM python:3.9
 
+RUN pwd
+
 WORKDIR /usr/src/app
 COPY . .
+
+RUN pwd
 
 RUN pip install requests
 
