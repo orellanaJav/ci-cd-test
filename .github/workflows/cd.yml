@@ -1,10 +1,12 @@
-name: Test Deploy
+name: Deploy
 
 on:
   push:
     branches:
-      - 'dev'
       - 'crafting'
+      - 'dev'
+      - 'release'
+      - 'main'
 
 jobs:
   get-stage-and-region:
@@ -184,26 +186,31 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
+      - uses: aws-actions/configure-aws-credentials@v1
+      - uses: actions/setup-python@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
-      
-      - name: test variables
-        run: |
-          echo "${{ matrix.stack.stack_name }}"
-          echo "${{ matrix.stack.fullDeploy }}"
+          python-version: '3.9'
 
       - name: Install Dependencies
         working-directory: ${{ matrix.stack.stack_name }}
-        run: npm install        
+        run: npm install
+      
+      - name: Enable Requirements
+        working-directory: ${{ matrix.stack.stack_name }}/services/${{ matrix.stack.lambda }}/core
+        run: |
+            python
 
       - name: Deploy All Stack
         working-directory: ${{ matrix.stack.stack_name }}
         run: |
           STAGE="${{ needs.get-stage-and-region.outputs.stage }}"
-          npx serverless deploy --stage $STAGE
+          npx serverless deploy --service=${{ matrix.stack.stack_name }} --stage $STAGE
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         if: ${{ matrix.stack.fullDeploy == 'true' }}
       
       - name: Deploy Only Function
