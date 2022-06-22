@@ -194,6 +194,10 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
+      - name: Test Python
+        working-directory: ${{ matrix.stack.stack_name }}
+        run: python
+
       - name: Install Dependencies
         working-directory: ${{ matrix.stack.stack_name }}
         run: npm install
