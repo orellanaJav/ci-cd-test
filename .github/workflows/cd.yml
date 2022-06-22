@@ -176,12 +176,12 @@ jobs:
   deploy:
     needs: [changes, stacks]
     name: Deploy
-    if: ${{ needs.changes.outputs.folders != '[]' && needs.changes.outputs.folders != '' }}
+    if: ${{ needs.changes.outputs.stack != '[]' && needs.changes.outputs.stack != '' }}
     strategy:
       matrix:
         # Parse JSON array containing names of all filters matching any of changed files
         # e.g. ['servicea', 'serviceb'] if both package folders contains changes
-        stack: ${{ fromJSON(needs.changes.outputs.folders) }}
+        stack: ${{ fromJSON(needs.changes.outputs.stack) }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
