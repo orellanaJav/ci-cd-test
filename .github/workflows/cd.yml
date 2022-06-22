@@ -197,7 +197,6 @@ jobs:
           python-version: '3.9'                  
       - run: |
           python3.9
-          print('hola')
 
       - name: Install Dependencies
         working-directory: ${{ matrix.stack.stack_name }}
