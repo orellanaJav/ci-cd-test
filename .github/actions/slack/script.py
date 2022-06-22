@@ -2,6 +2,7 @@ import json
 import sys
 import requests
 if __name__ == '__main__':
+    print('-----> ', sys.argv)
     slack_message_data = sys.argv[-1]
     slack_message_data = slack_message_data.replace('\'', '"')
     slack_message_data = json.loads(slack_message_data)
