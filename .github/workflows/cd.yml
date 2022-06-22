@@ -11,8 +11,6 @@ env:
   DEV_REGION: sa-east-1  
   RELEASE_REGION: us-east-1
   PROD_REGION: us-east-1
-  
-
 
 jobs:
   get-stage-and-region:
@@ -77,8 +75,7 @@ jobs:
         id: idStacks
         run: |                    
           STAGE="${{ needs.get-stage-and-region.outputs.stage }}"
-          REGION="${{ needs.get-stage-and-region.outputs.region }}"
-          echo hola "$REGION"
+          REGION="${{ needs.get-stage-and-region.outputs.region }}"          
           STACKS=$( aws cloudformation list-stacks --region="$REGION" --stack-status-filter CREATE_IN_PROGRESS CREATE_COMPLETE ROLLBACK_IN_PROGRESS ROLLBACK_FAILED ROLLBACK_COMPLETE DELETE_IN_PROGRESS DELETE_FAILED UPDATE_IN_PROGRESS UPDATE_COMPLETE_CLEANUP_IN_PROGRESS UPDATE_COMPLETE UPDATE_ROLLBACK_IN_PROGRESS UPDATE_ROLLBACK_FAILED UPDATE_ROLLBACK_COMPLETE_CLEANUP_IN_PROGRESS UPDATE_ROLLBACK_COMPLETE REVIEW_IN_PROGRESS | jq '.StackSummaries[].StackName')
           JSON="["
           while read stack; do
@@ -92,8 +89,7 @@ jobs:
           fi
           JSON="$JSON]"
           echo $JSON
-
-          # Set output
+          
           echo "::set-output name=listStacks::$( echo "$JSON" )"
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -114,7 +110,7 @@ jobs:
           export DIFF=$( git diff --diff-filter=d --name-only ${{ github.event.before }} $GITHUB_SHA )
           echo "Diff between ${{ github.event.before }} and $GITHUB_SHA"
           echo "$DIFF"
-          # Escape newlines (replace \n with %0A)
+          
           echo "::set-output name=diff::$( echo "$DIFF" | sed ':a;N;$!ba;s/\n/%0A/g' )"          
       - name: Set matrix for build
         id: filter
@@ -123,15 +119,13 @@ jobs:
           STACKS="${{ needs.stacks.outputs.listStacks }}"
           STAGE="${{ needs.get-stage-and-region.outputs.stage }}"
           REGION="${{ needs.get-stage-and-region.outputs.region }}"
-          MAKE_FULL_DEPLOY=false
-          is_requirements_update=false
+          MAKE_FULL_DEPLOY=false          
 
           if [ -z "$DIFF" ]; then
             echo "::set-output name=folders::[]"
           else
             JSON="["
-            json_stack="["
-            # Loop by lines
+            json_stack="["            
             while read path; do
               # Set $stack to substring before /
               stack="$( echo $path | cut -d'/' -f1 -s )"
@@ -153,21 +147,12 @@ jobs:
                 MAKE_FULL_DEPLOY=true
               fi
               stack_item="{\"stack_name\":\"$stack\",\"fullDeploy\":\"$MAKE_FULL_DEPLOY\",\"lambda\":\"$lambda\"},"              
-              
-              echo "$TEST" | jq
-              JSONline="\"$stack\","
+                                          
               if [[ "$json_stack" != *"$stack_item"* ]]; then
                 json_stack="$json_stack$stack_item"
               fi
             fi
             done <<< "$DIFF"
-
-            # Remove last "," and add closing brackets
-            if [[ $JSON == *, ]]; then
-              JSON="${JSON%?}"
-            fi
-            JSON="$JSON]"
-            # echo $JSON
 
             if [[ $json_stack == *, ]]; then
               json_stack="${json_stack%?}"
@@ -175,8 +160,6 @@ jobs:
             json_stack="$json_stack]"
             echo $json_stack
 
-            # Set output
-            # echo "::set-output name=folders::$( echo "$JSON" )"
             echo "::set-output name=stack::$( echo "$json_stack" )"
           fi
   deploy:
@@ -202,11 +185,6 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
-      
-      - name: test variables
-        run: |
-          echo "${{ matrix.stack.stack_name }}"
-          echo "${{ matrix.stack.fullDeploy }}"
 
       - name: Setup Python
         uses: actions/setup-python@v3        
@@ -264,5 +242,5 @@ jobs:
         uses: ./.github/actions/slack
         with:
           slack_webhook: ${{ secrets.SLACK_WEBHOOK }}
-          message: Hola from github actions
-          title: Hola Título From Github Actions
+          message: Despliegue realizado correctamente
+          title: Despliegue
