@@ -11,7 +11,7 @@ jobs:
     name: Get Stacks
     runs-on: ubuntu-latest
     outputs:
-      current-stacks: ${{ steps.get-stacks.outputs.stacks }}
+      stacks: ${{ steps.get-stacks.outputs.stacks }}
     steps:
       - uses: actions/checkout@v2
       - name: Configure AWS Credentials
@@ -50,7 +50,7 @@ jobs:
         id: filter
         run: |
           DIFF="${{ steps.diff.outputs.diff }}"
-          STACKS="${{ needs.stacks.outputs.current-stacks }}"
+          STACKS="${{ needs.stacks.outputs.stacks }}"
           echo "$STACKS"
           echo "$DIFF"
 
