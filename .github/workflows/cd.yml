@@ -139,9 +139,7 @@ jobs:
             if [[ "$stack" != ".github" && "$lambda" != "" ]]; then
               if [[ $STACKS != *"$stack_cloudfront"* ]]; then
                 MAKE_FULL_DEPLOY=true
-              fi
-              echo el stack "$stack_cloudfront"
-              echo is deployed ? "$is_stack_lambda_deployed"
+              fi                            
 
               if [[ $path == *"requirements"* ]]; then
                 MAKE_FULL_DEPLOY=true

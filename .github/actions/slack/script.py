@@ -5,6 +5,9 @@ if __name__ == '__main__':
     title = str(sys.argv[-1])
     message = str(sys.argv[-2])
     url = str(sys.argv[-3])
+    print(title)
+    print(message)
+    print(url)
     slack_data = {
         'username': 'NotificationBot',
         'icon_emoji': ':satellite:',
