@@ -44,6 +44,13 @@ jobs:
         if: ${{ steps.extract_current_branch.outputs.branch == 'main' }}
       - name: print region
         run: echo "${{ env.REGION }}"
+      - name: Get Stage And Region
+        id: stage-and-region
+        run: |
+          STAGE=env.STAGE
+          REGION=env.REGION
+          echo "::set-output name=stage::$( echo "$STAGE" )"
+          echo "::set-output name=region::$( echo "$REGION" )"
 
   stacks:
     name: Get Stacks
@@ -62,7 +69,10 @@ jobs:
       - name: Get Current Stacks
         id: idStacks
         run: |                    
-          echo "${{ env.REGION }}"
+          STAGE="${{ needs.get-stage-and-region.outputs.stage }}"
+          REGION="${{ needs.get-stage-and-region.outputs.region }}"
+          echo "$STAGE"
+          echo "$REGION"
           STACKS=$( aws cloudformation list-stacks --stack-status-filter CREATE_IN_PROGRESS CREATE_COMPLETE ROLLBACK_IN_PROGRESS ROLLBACK_FAILED ROLLBACK_COMPLETE DELETE_IN_PROGRESS DELETE_FAILED UPDATE_IN_PROGRESS UPDATE_COMPLETE_CLEANUP_IN_PROGRESS UPDATE_COMPLETE UPDATE_ROLLBACK_IN_PROGRESS UPDATE_ROLLBACK_FAILED UPDATE_ROLLBACK_COMPLETE_CLEANUP_IN_PROGRESS UPDATE_ROLLBACK_COMPLETE REVIEW_IN_PROGRESS | jq '.StackSummaries[].StackName')
           JSON="["
           while read stack; do
@@ -78,7 +88,7 @@ jobs:
           echo $JSON
 
           # Set output
-          echo "::set-output name=listStacks::$( echo "$JSON" )"          
+          echo "::set-output name=listStacks::$( echo "$JSON" )"
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
