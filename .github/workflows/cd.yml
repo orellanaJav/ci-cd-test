@@ -206,6 +206,10 @@ jobs:
           cd ${{ matrix.stack.stack_name }}/services/${{ matrix.stack.lambda }}/core
           pip install pyyaml
           python3.9 -c """
+          from yaml import dump
+          from yaml import load
+          from yaml import FullLoader
+          
           if __name__ == '__main__':
               with open('serverless.yml') as file:
                   resource_data = load(file, Loader=FullLoader)
