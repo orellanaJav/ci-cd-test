@@ -25,26 +25,26 @@ jobs:
 
       - name: Set Region For Dev
         run: |
-          env.STAGE=='dev'
-          env.REGION=='sa-east-1'                    
+          env.STAGE='dev'
+          env.REGION='sa-east-1'                    
         if: ${{ steps.extract_current_branch.outputs.branch == 'dev' }}
 
       - name: Set Region For Crafting
         run: |
-          env.STAGE=='crafting'
-          env.REGION=='sa-east-1'                    
+          env.STAGE='crafting'
+          env.REGION='sa-east-1'                    
         if: ${{ steps.extract_current_branch.outputs.branch == 'crafting' }}
 
       - name: Set Region For Release
         run: |
-          env.STAGE=='release'
-          env.REGION=='sa-east-1'                    
+          env.STAGE='release'
+          env.REGION='sa-east-1'                    
         if: ${{ steps.extract_current_branch.outputs.branch == 'release' }}
 
       - name: Set Region For Production
         run: |
-          env.STAGE=='production'
-          env.REGION=='sa-east-1'                    
+          env.STAGE='production'
+          env.REGION='sa-east-1'                    
         if: ${{ steps.extract_current_branch.outputs.branch == 'main' }}
 
   stacks:
