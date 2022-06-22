@@ -208,7 +208,7 @@ jobs:
       
       - name: Deploy Only Function
         working-directory: ${{ matrix.stack.stack_name }}/services/${{ matrix.stack.lambda }}/core
-        run: sls deploy -f ${{ matrix.stack.lambda }}
+        run: npx serverless deploy -f ${{ matrix.stack.lambda }}
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
