@@ -72,7 +72,7 @@ jobs:
         run: |                    
           STAGE="${{ needs.get-stage-and-region.outputs.stage }}"
           REGION="${{ needs.get-stage-and-region.outputs.region }}"
-          echo REGION ES ---> "$REGION"
+          echo "$REGION"
           STACKS=$( aws cloudformation list-stacks --region="$REGION" --stack-status-filter CREATE_IN_PROGRESS CREATE_COMPLETE ROLLBACK_IN_PROGRESS ROLLBACK_FAILED ROLLBACK_COMPLETE DELETE_IN_PROGRESS DELETE_FAILED UPDATE_IN_PROGRESS UPDATE_COMPLETE_CLEANUP_IN_PROGRESS UPDATE_COMPLETE UPDATE_ROLLBACK_IN_PROGRESS UPDATE_ROLLBACK_FAILED UPDATE_ROLLBACK_COMPLETE_CLEANUP_IN_PROGRESS UPDATE_ROLLBACK_COMPLETE REVIEW_IN_PROGRESS | jq '.StackSummaries[].StackName')
           JSON="["
           while read stack; do
