@@ -200,12 +200,12 @@ jobs:
       - name: Deploy All Stack
         working-directory: ${{ matrix.stack.stack_name }}
         run: echo "${{ matrix.stack.stack_name }}"
-        if: ${{ matrix.stack.fullDeploy == true }}
+        if: ${{ matrix.stack.fullDeploy == 'true' }}
       
       - name: Deploy Only Function
         working-directory: ${{ matrix.stack.stack_name }}
         run: echo "${{ matrix.stack.stack_name }}"
-        if: ${{ matrix.stack.fullDeploy == false }}
+        if: ${{ matrix.stack.fullDeploy == 'false' }}
 
       # - name: deploy
       #   working-directory: ${{ matrix.folder }}
