@@ -205,7 +205,18 @@ jobs:
           ls -la
           cd ${{ matrix.stack.stack_name }}/services/${{ matrix.stack.lambda }}/core
           pip install pyyaml
-          python3.9 test_yml.py
+          python3.9 -c """
+            if __name__ == '__main__':
+              with open('serverless.yml') as file:
+                  resource_data = load(file, Loader=FullLoader)
+                  file.close()
+              print(resource_data)
+              with open('serverless.yml', 'w') as file:
+                  resource_data['plugins'].remove('serverless-python-requirements')
+                  serverless = dump(resource_data, file)        
+                  file.close()
+              print(resource_data)
+          """
 
       - name: Install Dependencies
         working-directory: ${{ matrix.stack.stack_name }}
