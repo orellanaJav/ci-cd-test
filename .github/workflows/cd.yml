@@ -189,7 +189,7 @@ jobs:
         with:
           path: ~/.npm
           key: node-${{ hashFiles('**/package-lock.json') }}
-          restore-key: |
+          restore-keys: |
             node-
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
