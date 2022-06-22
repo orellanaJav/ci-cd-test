@@ -147,13 +147,12 @@ jobs:
                 MAKE_FULL_DEPLOY=true
               fi
               stack_item="{\"stack_name\":\"$stack\",\"fullDeploy\":\"$MAKE_FULL_DEPLOY\",\"lambda\":\"$lambda\"},"
-              json_stack="$json_stack$stack_item"
               # TEST=[{\"stack\":\"$stack\",\"fullDeploy\":\"$MAKE_FULL_DEPLOY\",\"lambda\":\"$lambda\"}]
               
               echo "$TEST" | jq
               JSONline="\"$stack\","
-              if [[ "$JSON" != *"$JSONline"* ]]; then
-                JSON="$JSON$JSONline"
+              if [[ "$json_stack" != *"$stack_item"* ]]; then
+                json_stack="$json_stack$stack_item"
               fi
             fi
             done <<< "$DIFF"
