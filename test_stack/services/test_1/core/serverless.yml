@@ -10,6 +10,8 @@ custom:
   baseName: ${self:custom.stackName}-test_1
   runtime: ${param:runtime, "python3.9"}
   stackName: test-stack
+  pythonRequirements:
+    dockerizePip: true
 
 provider:
   deploymentBucket:
