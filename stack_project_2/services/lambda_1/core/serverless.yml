@@ -1,22 +1,19 @@
-service: lambda-1
+# Debe ser un nombre unico porque es el que crea el stack
+service: lambda-1-1
+
 
 frameworkVersion: '3'
 
 custom:
-  stackName: stack-1
+  stackName: stack-2
   baseName: ${opt:stage}-${self:custom.stackName}-${self:service}
 
 provider:
   name: aws
   runtime: python3.9
-  environment: ${file(../setup/${opt:stage, 'dev'}/env_variables.json)}
-
-resources:
-  Resources:
-    ${file(../../../setup/resources/dynamo.yml)}
-
+  environment: ${file(../setup/${opt:stage, 'dev'}/env_variables.json)}    
 
 functions:
-  hello:
+  hello-2:
     handler: lambda_1.hello
     name: ${self:custom.baseName}
