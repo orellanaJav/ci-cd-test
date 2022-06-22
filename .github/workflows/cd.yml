@@ -32,6 +32,7 @@ jobs:
   changes:
     name: Changes
     runs-on: ubuntu-latest
+    needs: stacks
     outputs:
       folders: ${{ steps.filter.outputs.folders }}
     steps:
@@ -49,7 +50,7 @@ jobs:
         id: filter
         run: |
           DIFF="${{ steps.diff.outputs.diff }}"
-          STACKS="${{ stacks.outputs.current-stacks }}"
+          STACKS="${{ needs.stacks.outputs.current-stacks }}"
           echo "$STACKS"
           echo "$DIFF"
 
