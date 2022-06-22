@@ -28,4 +28,5 @@ def lambda_handler(event: dict, context: dict) -> dict:
     a = np.arange(15).reshape(3, 5)
     print('hola')
 
+
     return {'status': 'status'}
