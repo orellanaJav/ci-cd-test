@@ -4,7 +4,7 @@ frameworkVersion: '3'
 
 plugins:
   - serverless-deployment-bucket
-  # - serverless-python-requirements
+  - serverless-python-requirements
 
 custom:
   baseName: ${self:custom.stackName}-test_1

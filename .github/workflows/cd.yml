@@ -9,224 +9,218 @@ on:
       - 'release'      
 
 jobs:
-  # get-stage-and-region:
-  #   name: Get Stage And Region by Branch
-  #   runs-on: ubuntu-latest
-  #   outputs:
-  #     region: ${{ steps.stage-and-region.outputs.region }}
-  #     stage: ${{ steps.stage-and-region.outputs.stage }}
-  #   steps:
-  #     - name: Get Current Branch
-  #       shell: bash
-  #       run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
-  #       id: extract_current_branch
+  get-stage-and-region:
+    name: Get Stage And Region by Branch
+    runs-on: ubuntu-latest
+    outputs:
+      region: ${{ steps.stage-and-region.outputs.region }}
+      stage: ${{ steps.stage-and-region.outputs.stage }}
+    steps:
+      - name: Get Current Branch
+        shell: bash
+        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+        id: extract_current_branch
 
-  #     - name: Set Region For Dev
-  #       run: |
-  #         echo "STAGE=dev" >> $GITHUB_ENV
-  #         echo "REGION=${{ secrets.DEV_REGION }}" >> $GITHUB_ENV
-  #       if: ${{ steps.extract_current_branch.outputs.branch == 'dev' }}
+      - name: Set Region For Dev
+        run: |
+          echo "STAGE=dev" >> $GITHUB_ENV
+          echo "REGION=${{ secrets.DEV_REGION }}" >> $GITHUB_ENV
+        if: ${{ steps.extract_current_branch.outputs.branch == 'dev' }}
 
-  #     - name: Set Region For Crafting
-  #       run: |
-  #         echo "STAGE=dev" >> $GITHUB_ENV
-  #         echo "REGION=${{ secrets.CRAFTING_REGION }}" >> $GITHUB_ENV
-  #       if: ${{ steps.extract_current_branch.outputs.branch == 'crafting' }}
+      - name: Set Region For Crafting
+        run: |
+          echo "STAGE=dev" >> $GITHUB_ENV
+          echo "REGION=${{ secrets.CRAFTING_REGION }}" >> $GITHUB_ENV
+        if: ${{ steps.extract_current_branch.outputs.branch == 'crafting' }}
 
-  #     - name: Set Region For Release
-  #       run: |
-  #         eecho "STAGE=release" >> $GITHUB_ENV
-  #         echo "REGION=${{ secrets.RELEASE_REGION }}" >> $GITHUB_ENV
-  #       if: ${{ steps.extract_current_branch.outputs.branch == 'release' }}
+      - name: Set Region For Release
+        run: |
+          eecho "STAGE=release" >> $GITHUB_ENV
+          echo "REGION=${{ secrets.RELEASE_REGION }}" >> $GITHUB_ENV
+        if: ${{ steps.extract_current_branch.outputs.branch == 'release' }}
 
-  #     - name: Set Region For Production
-  #       run: |
-  #         echo "STAGE=prod" >> $GITHUB_ENV
-  #         echo "REGION=${{ secrets.PROD_REGION }}" >> $GITHUB_ENV
-  #       if: ${{ steps.extract_current_branch.outputs.branch == 'main' }}
+      - name: Set Region For Production
+        run: |
+          echo "STAGE=prod" >> $GITHUB_ENV
+          echo "REGION=${{ secrets.PROD_REGION }}" >> $GITHUB_ENV
+        if: ${{ steps.extract_current_branch.outputs.branch == 'main' }}
 
-  #     - name: Get Stage And Region
-  #       id: stage-and-region
-  #       run: |
-  #         STAGE="${{ env.STAGE }}"
-  #         REGION="${{ env.REGION }}"
-  #         echo "::set-output name=stage::$( echo "$STAGE" )"
-  #         echo "::set-output name=region::$( echo "$REGION" )"
+      - name: Get Stage And Region
+        id: stage-and-region
+        run: |
+          STAGE="${{ env.STAGE }}"
+          REGION="${{ env.REGION }}"
+          echo "::set-output name=stage::$( echo "$STAGE" )"
+          echo "::set-output name=region::$( echo "$REGION" )"
 
-  # stacks:
-  #   name: Get Stacks
-  #   runs-on: ubuntu-latest
-  #   needs: get-stage-and-region
-  #   outputs:
-  #     listStacks: ${{ steps.idStacks.outputs.listStacks }}
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #     - name: Configure AWS Credentials
-  #       uses: aws-actions/configure-aws-credentials@v1
-  #       with:
-  #         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-  #         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  #         aws-region: sa-east-1
-  #     - name: Get Current Stacks
-  #       id: idStacks
-  #       run: |                    
-  #         STAGE="${{ needs.get-stage-and-region.outputs.stage }}"
-  #         REGION="${{ needs.get-stage-and-region.outputs.region }}"
+  stacks:
+    name: Get Stacks
+    runs-on: ubuntu-latest
+    needs: get-stage-and-region
+    outputs:
+      listStacks: ${{ steps.idStacks.outputs.listStacks }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: sa-east-1
+      - name: Get Current Stacks
+        id: idStacks
+        run: |                    
+          STAGE="${{ needs.get-stage-and-region.outputs.stage }}"
+          REGION="${{ needs.get-stage-and-region.outputs.region }}"
 
-  #         STACKS=$( aws cloudformation list-stacks --stack-status-filter CREATE_IN_PROGRESS CREATE_COMPLETE ROLLBACK_IN_PROGRESS ROLLBACK_FAILED ROLLBACK_COMPLETE DELETE_IN_PROGRESS DELETE_FAILED UPDATE_IN_PROGRESS UPDATE_COMPLETE_CLEANUP_IN_PROGRESS UPDATE_COMPLETE UPDATE_ROLLBACK_IN_PROGRESS UPDATE_ROLLBACK_FAILED UPDATE_ROLLBACK_COMPLETE_CLEANUP_IN_PROGRESS UPDATE_ROLLBACK_COMPLETE REVIEW_IN_PROGRESS | jq '.StackSummaries[].StackName')
-  #         JSON="["
-  #         while read stack; do
-  #           JSONline="\"$stack\","
-  #           if [[ "$JSON" != *"$JSONline"* ]]; then
-  #             JSON="$JSON$JSONline"
-  #           fi
-  #         done <<< "$STACKS"
-  #         if [[ $JSON == *, ]]; then
-  #             JSON="${JSON%?}"
-  #         fi
-  #         JSON="$JSON]"
-  #         echo $JSON
+          STACKS=$( aws cloudformation list-stacks --stack-status-filter CREATE_IN_PROGRESS CREATE_COMPLETE ROLLBACK_IN_PROGRESS ROLLBACK_FAILED ROLLBACK_COMPLETE DELETE_IN_PROGRESS DELETE_FAILED UPDATE_IN_PROGRESS UPDATE_COMPLETE_CLEANUP_IN_PROGRESS UPDATE_COMPLETE UPDATE_ROLLBACK_IN_PROGRESS UPDATE_ROLLBACK_FAILED UPDATE_ROLLBACK_COMPLETE_CLEANUP_IN_PROGRESS UPDATE_ROLLBACK_COMPLETE REVIEW_IN_PROGRESS | jq '.StackSummaries[].StackName')
+          JSON="["
+          while read stack; do
+            JSONline="\"$stack\","
+            if [[ "$JSON" != *"$JSONline"* ]]; then
+              JSON="$JSON$JSONline"
+            fi
+          done <<< "$STACKS"
+          if [[ $JSON == *, ]]; then
+              JSON="${JSON%?}"
+          fi
+          JSON="$JSON]"
+          echo $JSON
 
-  #         # Set output
-  #         echo "::set-output name=listStacks::$( echo "$JSON" )"
-  #       env:
-  #         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-  #         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          # Set output
+          echo "::set-output name=listStacks::$( echo "$JSON" )"
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       
-  # changes:
-  #   name: Changes
-  #   runs-on: ubuntu-latest
-  #   needs: [stacks, get-stage-and-region]
-  #   outputs:
-  #     stack: ${{ steps.filter.outputs.stack }}
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #     - name: Check changed files
-  #       id: diff
-  #       run: |
-  #         git fetch origin ${{ github.event.before }} --depth=1
-  #         export DIFF=$( git diff --diff-filter=d --name-only ${{ github.event.before }} $GITHUB_SHA )
-  #         echo "Diff between ${{ github.event.before }} and $GITHUB_SHA"
-  #         echo "$DIFF"
-  #         # Escape newlines (replace \n with %0A)
-  #         echo "::set-output name=diff::$( echo "$DIFF" | sed ':a;N;$!ba;s/\n/%0A/g' )"          
-  #     - name: Set matrix for build
-  #       id: filter
-  #       run: |
-  #         DIFF="${{ steps.diff.outputs.diff }}"
-  #         STACKS="${{ needs.stacks.outputs.listStacks }}"
-  #         STAGE="${{ needs.get-stage-and-region.outputs.stage }}"
-  #         REGION="${{ needs.get-stage-and-region.outputs.region }}"
-  #         MAKE_FULL_DEPLOY=false
-  #         is_requirements_update=false
+  changes:
+    name: Changes
+    runs-on: ubuntu-latest
+    needs: [stacks, get-stage-and-region]
+    outputs:
+      stack: ${{ steps.filter.outputs.stack }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Check changed files
+        id: diff
+        run: |
+          git fetch origin ${{ github.event.before }} --depth=1
+          export DIFF=$( git diff --diff-filter=d --name-only ${{ github.event.before }} $GITHUB_SHA )
+          echo "Diff between ${{ github.event.before }} and $GITHUB_SHA"
+          echo "$DIFF"
+          # Escape newlines (replace \n with %0A)
+          echo "::set-output name=diff::$( echo "$DIFF" | sed ':a;N;$!ba;s/\n/%0A/g' )"          
+      - name: Set matrix for build
+        id: filter
+        run: |
+          DIFF="${{ steps.diff.outputs.diff }}"
+          STACKS="${{ needs.stacks.outputs.listStacks }}"
+          STAGE="${{ needs.get-stage-and-region.outputs.stage }}"
+          REGION="${{ needs.get-stage-and-region.outputs.region }}"
+          MAKE_FULL_DEPLOY=false
+          is_requirements_update=false
 
-  #         if [ -z "$DIFF" ]; then
-  #           echo "::set-output name=folders::[]"
-  #         else
-  #           JSON="["
-  #           json_stack="["
-  #           # Loop by lines
-  #           while read path; do
-  #             # Set $stack to substring before /
-  #             stack="$( echo $path | cut -d'/' -f1 -s )"
-  #             stack_mid_dash="$( echo $stack | tr _ - )"
-  #             lambda="$( echo $path | cut -d'/' -f3 -s )"
-  #             lambda_mid_dash="$( echo $lambda | tr _ - )"
-  #             stack_cloudfront="$stack_mid_dash-$lambda_mid_dash-$STAGE"
+          if [ -z "$DIFF" ]; then
+            echo "::set-output name=folders::[]"
+          else
+            JSON="["
+            json_stack="["
+            # Loop by lines
+            while read path; do
+              # Set $stack to substring before /
+              stack="$( echo $path | cut -d'/' -f1 -s )"
+              stack_mid_dash="$( echo $stack | tr _ - )"
+              lambda="$( echo $path | cut -d'/' -f3 -s )"
+              lambda_mid_dash="$( echo $lambda | tr _ - )"
+              stack_cloudfront="$stack_mid_dash-$lambda_mid_dash-$STAGE"
 
 
-  #           # ignore .github folder
-  #           if [[ "$stack" != ".github" ]]; then
-  #             if [[ $STACKS != *"$stack_cloudfront"* ]]; then
-  #               MAKE_FULL_DEPLOY=true
-  #             fi
-  #             echo el stack "$stack_cloudfront"
-  #             echo is deployed ? "$is_stack_lambda_deployed"
+            # ignore .github folder
+            if [[ "$stack" != ".github" ]]; then
+              if [[ $STACKS != *"$stack_cloudfront"* ]]; then
+                MAKE_FULL_DEPLOY=true
+              fi
+              echo el stack "$stack_cloudfront"
+              echo is deployed ? "$is_stack_lambda_deployed"
 
-  #             if [[ $path == *"requirements"* ]]; then
-  #               MAKE_FULL_DEPLOY=true
-  #             fi
-  #             stack_item="{\"stack_name\":\"$stack\",\"fullDeploy\":\"$MAKE_FULL_DEPLOY\",\"lambda\":\"$lambda\"},"
-  #             json_stack="$json_stack$stack_item"
-  #             # TEST=[{\"stack\":\"$stack\",\"fullDeploy\":\"$MAKE_FULL_DEPLOY\",\"lambda\":\"$lambda\"}]
+              if [[ $path == *"requirements"* ]]; then
+                MAKE_FULL_DEPLOY=true
+              fi
+              stack_item="{\"stack_name\":\"$stack\",\"fullDeploy\":\"$MAKE_FULL_DEPLOY\",\"lambda\":\"$lambda\"},"
+              json_stack="$json_stack$stack_item"
+              # TEST=[{\"stack\":\"$stack\",\"fullDeploy\":\"$MAKE_FULL_DEPLOY\",\"lambda\":\"$lambda\"}]
               
-  #             echo "$TEST" | jq
-  #             JSONline="\"$stack\","
-  #             if [[ "$JSON" != *"$JSONline"* ]]; then
-  #               JSON="$JSON$JSONline"
-  #             fi
-  #           fi
-  #           done <<< "$DIFF"
+              echo "$TEST" | jq
+              JSONline="\"$stack\","
+              if [[ "$JSON" != *"$JSONline"* ]]; then
+                JSON="$JSON$JSONline"
+              fi
+            fi
+            done <<< "$DIFF"
 
-  #           # Remove last "," and add closing brackets
-  #           if [[ $JSON == *, ]]; then
-  #             JSON="${JSON%?}"
-  #           fi
-  #           JSON="$JSON]"
-  #           # echo $JSON
+            # Remove last "," and add closing brackets
+            if [[ $JSON == *, ]]; then
+              JSON="${JSON%?}"
+            fi
+            JSON="$JSON]"
+            # echo $JSON
 
-  #           if [[ $json_stack == *, ]]; then
-  #             json_stack="${json_stack%?}"
-  #           fi
-  #           json_stack="$json_stack]"
-  #           echo $json_stack
+            if [[ $json_stack == *, ]]; then
+              json_stack="${json_stack%?}"
+            fi
+            json_stack="$json_stack]"
+            echo $json_stack
 
-  #           # Set output
-  #           # echo "::set-output name=folders::$( echo "$JSON" )"
-  #           echo "::set-output name=stack::$( echo "$json_stack" )"
-  #         fi
-  # deploy:
-  #   needs: [get-stage-and-region, changes, stacks]
-  #   name: Deploy
-  #   if: ${{ needs.changes.outputs.stack != '[]' && needs.changes.outputs.stack != '' }}
-  #   strategy:
-  #     matrix:
-  #       stack: ${{ fromJSON(needs.changes.outputs.stack) }}
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #     - name: Configure AWS Credentials
-  #       uses: aws-actions/configure-aws-credentials@v1
-  #       with:
-  #         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-  #         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  #         aws-region: ${{ secrets.AWS_REGION }}
+            # Set output
+            # echo "::set-output name=folders::$( echo "$JSON" )"
+            echo "::set-output name=stack::$( echo "$json_stack" )"
+          fi
+  deploy:
+    needs: [get-stage-and-region, changes, stacks]
+    name: Deploy
+    if: ${{ needs.changes.outputs.stack != '[]' && needs.changes.outputs.stack != '' }}
+    strategy:
+      matrix:
+        stack: ${{ fromJSON(needs.changes.outputs.stack) }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
       
-  #     - name: test variables
-  #       run: |
-  #         echo "${{ matrix.stack.stack_name }}"
-  #         echo "${{ matrix.stack.fullDeploy }}"
+      - name: test variables
+        run: |
+          echo "${{ matrix.stack.stack_name }}"
+          echo "${{ matrix.stack.fullDeploy }}"
 
-  #     - name: Install Dependencies
-  #       working-directory: ${{ matrix.stack.stack_name }}
-  #       run: npm install        
+      - name: Install Dependencies
+        working-directory: ${{ matrix.stack.stack_name }}
+        run: npm install        
 
-  #     - name: Deploy All Stack
-  #       working-directory: ${{ matrix.stack.stack_name }}
-  #       run: |
-  #         STAGE="${{ needs.get-stage-and-region.outputs.stage }}"
-  #         npx serverless deploy --service=${{ matrix.stack.stack_name }} --stage $STAGE
-  #       if: ${{ matrix.stack.fullDeploy == 'true' }}
+      - name: Deploy All Stack
+        working-directory: ${{ matrix.stack.stack_name }}
+        run: |
+          STAGE="${{ needs.get-stage-and-region.outputs.stage }}"
+          npx serverless deploy --service=${{ matrix.stack.stack_name }} --stage $STAGE
+        if: ${{ matrix.stack.fullDeploy == 'true' }}
       
-  #     - name: Deploy Only Function
-  #       working-directory: ${{ matrix.stack.stack_name }}/services/${{ matrix.stack.lambda }}/core
-  #       run: |
-  #         STAGE="${{ needs.get-stage-and-region.outputs.stage }}"          
-  #         npx serverless deploy -f ${{ matrix.stack.lambda }} --stage $STAGE
-  #       env:
-  #         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-  #         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  #       if: ${{ matrix.stack.fullDeploy == 'false' }}
+      - name: Deploy Only Function
+        working-directory: ${{ matrix.stack.stack_name }}/services/${{ matrix.stack.lambda }}/core
+        run: |
+          STAGE="${{ needs.get-stage-and-region.outputs.stage }}"          
+          npx serverless deploy -f ${{ matrix.stack.lambda }} --stage $STAGE
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        if: ${{ matrix.stack.fullDeploy == 'false' }}
 
-  #     # - name: deploy
-  #     #   working-directory: ${{ matrix.folder }}
-  #     #   run: npm install && npx serverless deploy
-  #     #   env:
-  #     #     AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-  #     #     AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
   send-slack-message:
     runs-on: ubuntu-latest
-    # needs: ["deploy"]
+    needs: ["deploy"]
     steps:
       - uses: actions/checkout@v2
       - name: send a slack message
@@ -235,12 +229,3 @@ jobs:
           slack_webhook: ${{ secrets.SLACK_WEBHOOK }}
           message: Hola from github actions
           title: Hola Título From Github Actions
-  # send-slack-message:
-  #   runs-on: ubuntu-latest
-  #   needs: ["deploy"]
-  #   steps:
-  #     - name: send a slack message
-  #       uses: docker://technosophos/slack-notify
-  #       env:
-  #         SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-  #         SLACK_MESSAGE: 'Deployed to ${{ secrets.AWS_REGION }} region'
