@@ -143,13 +143,7 @@ jobs:
               if [[ $path == *"requirements"* ]]; then
                 MAKE_FULL_DEPLOY=true
               fi
-              TEST=[
-                    {
-                      \"stack\":\"$stack\",
-                      \"fullDeploy\":\"$MAKE_FULL_DEPLOY\",
-                      \"lambdas\":\"$lambda\"
-                    }
-                  ]
+              TEST=[{\"stack\":\"$stack\",\"fullDeploy\":\"$MAKE_FULL_DEPLOY\",\"lambdas\":\"$lambda\"}]
               
               echo "$TEST" | jq
               JSONline="\"$stack\","
