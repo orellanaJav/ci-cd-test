@@ -115,8 +115,6 @@ jobs:
           STACKS="${{ needs.stacks.outputs.listStacks }}"
           STAGE="${{ needs.get-stage-and-region.outputs.stage }}"
           REGION="${{ needs.get-stage-and-region.outputs.region }}"
-          echo "$STACKS"
-          echo "$DIFF"
 
           if [ -z "$DIFF" ]; then
             echo "::set-output name=folders::[]"
@@ -136,6 +134,7 @@ jobs:
               if [[ $STACKS == *"$stack_cloudfront"* ]]; then
                 is_stack_lambda_deployed=true
               fi
+              echo el stack "$stack_cloudfront"
               echo is deployed ? "$is_stack_lambda_deployed"
 
 
@@ -143,8 +142,7 @@ jobs:
               is_requirements_update=false
               if [[ $path == *"requirements"* ]]; then
                 is_requirements_update=true
-              fi
-              echo "$is_requirements_update"
+              fi              
 
             # ignore .github folder
             if [[ "$stack" != ".github" ]]; then
