@@ -192,12 +192,12 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Test Python
-        uses: actions/setup-python@v4
+      - name: Set up Python
+        uses: actions/setup-python@v3
         with:
-          python-version: '3.9'
-        working-directory: ${{ matrix.stack.stack_name }}
-        run: python3.9
+          python-version: '3.9'                  
+      - run: |
+          python3.9
 
       - name: Install Dependencies
         working-directory: ${{ matrix.stack.stack_name }}
