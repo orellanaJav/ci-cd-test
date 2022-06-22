@@ -196,6 +196,16 @@ jobs:
           echo "${{ matrix.stack.stack_name }}"
           echo "${{ matrix.stack.fullDeploy }}"
 
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.9'                  
+      - run: |
+          pwd
+          ls -la          
+          pip install pyyaml
+          python3.9 test_yml.py
+
       - name: Install Dependencies
         working-directory: ${{ matrix.stack.stack_name }}
         run: npm install        
