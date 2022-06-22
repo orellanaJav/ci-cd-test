@@ -11,7 +11,7 @@ jobs:
     name: Get Stacks
     runs-on: ubuntu-latest
     outputs:
-      listStacks: ${{ steps.get-stacks.outputs.listStacks }}
+      listStacks: ${{ steps.idStacks.outputs.listStacks }}
     steps:
       - uses: actions/checkout@v2
       - name: Configure AWS Credentials
@@ -21,7 +21,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: sa-east-1
       - name: Get Current Stacks
-        id: get-stacks
+        id: idStacks
         run: |
           STACKS=$( aws cloudformation list-stacks --stack-status-filter CREATE_IN_PROGRESS CREATE_COMPLETE ROLLBACK_IN_PROGRESS ROLLBACK_FAILED ROLLBACK_COMPLETE DELETE_IN_PROGRESS DELETE_FAILED UPDATE_IN_PROGRESS UPDATE_COMPLETE_CLEANUP_IN_PROGRESS UPDATE_COMPLETE UPDATE_ROLLBACK_IN_PROGRESS UPDATE_ROLLBACK_FAILED UPDATE_ROLLBACK_COMPLETE_CLEANUP_IN_PROGRESS UPDATE_ROLLBACK_COMPLETE REVIEW_IN_PROGRESS | jq '.StackSummaries[].StackName' | jq -s )
           echo "::set-output name=listStacks::$( echo "$STACKS" )"
