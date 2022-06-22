@@ -197,14 +197,11 @@ jobs:
           python-version: '3.9'                  
       - run: |
           python3.9
+          print('hola')
 
       - name: Install Dependencies
         working-directory: ${{ matrix.stack.stack_name }}
         run: npm install
-      
-      - name: Enable Requirements
-        working-directory: ${{ matrix.stack.stack_name }}/services/${{ matrix.stack.lambda }}/core
-        run: npm install  
 
       - name: Deploy All Stack
         working-directory: ${{ matrix.stack.stack_name }}
