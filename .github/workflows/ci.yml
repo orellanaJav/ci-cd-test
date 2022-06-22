@@ -28,7 +28,7 @@ jobs:
         with:
           slack_webhook: ${{ secrets.SLACK_WEBHOOK }}
           title: ":pr: Creación de PR para CR"
-          message: "Se ha creado el <${{ needs.get-pr-link.outputs.link }}|siguiente> PR :point-left:"
+          message: "Se ha creado el <${{ needs.get-pr-link.outputs.link }}|siguiente> PR"
   # run-unit-tests:
   #  runs-on: ubuntu-latest
   #  steps:
