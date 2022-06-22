@@ -39,7 +39,7 @@ jobs:
         with:
           slack_webhook: ${{ secrets.SLACK_WEBHOOK }}
           title: Creación de PR para CR
-          message: Se ha creado el <${{ needs.test.outputs.link }}|siguiente> PR
+          message: "Se ha creado el <${{ needs.test.outputs.link }}|siguiente> PR :pr: :smile:"
   # run-unit-tests:
   #  runs-on: ubuntu-latest
   #  steps:
