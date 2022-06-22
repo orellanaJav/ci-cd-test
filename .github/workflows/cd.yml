@@ -188,7 +188,7 @@ jobs:
         uses: actions/cache@v1
         with:
           path: ~/.npm
-          key: node-${{ hasFiles('**/package-lock.json') }}
+          key: node-${{ hashFiles('**/package-lock.json') }}
           restore-key: |
             node-
       - name: Configure AWS Credentials
