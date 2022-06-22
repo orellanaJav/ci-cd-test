@@ -4,9 +4,10 @@ import requests
 if __name__ == '__main__':
     print('-----> ', sys.argv[-1])
     print('-----> ', sys.argv[-2])
+    print('-----> ', sys.argv[-3])
     url = str(sys.argv[-2])
     message = str(sys.argv[-1])
-    title = 'Test Título'
+    title = str(sys.argv[-3])
     slack_data = {
         'username': 'NotificationBot',
         'icon_emoji': ':satellite:',
