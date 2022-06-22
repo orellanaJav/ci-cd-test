@@ -196,8 +196,9 @@ jobs:
           echo "${{ matrix.stack.stack_name }}"
           echo "${{ matrix.stack.fullDeploy }}"
 
-      - name: Set up Python
+      - name: Disabled python-requirements plugin
         uses: actions/setup-python@v3
+        if: ${{ matrix.stack.fullDeploy == 'false' }}
         with:
           python-version: '3.9'                  
       - run: |
@@ -209,7 +210,7 @@ jobs:
           from yaml import dump
           from yaml import load
           from yaml import FullLoader
-          
+
           if __name__ == '__main__':
               with open('serverless.yml') as file:
                   resource_data = load(file, Loader=FullLoader)
