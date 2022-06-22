@@ -115,6 +115,8 @@ jobs:
           STACKS="${{ needs.stacks.outputs.listStacks }}"
           STAGE="${{ needs.get-stage-and-region.outputs.stage }}"
           REGION="${{ needs.get-stage-and-region.outputs.region }}"
+          MAKE_FULL_DEPLOY=false
+          is_requirements_update=false
 
           if [ -z "$DIFF" ]; then
             echo "::set-output name=folders::[]"
@@ -130,23 +132,19 @@ jobs:
               stack_cloudfront="$stack_mid_dash-$lambda_mid_dash-$STAGE"
 
 
-              is_stack_lambda_deployed=false
+            # ignore .github folder
+            if [[ "$stack" != ".github" ]]; then
               if [[ $STACKS == *"$stack_cloudfront"* ]]; then
-                is_stack_lambda_deployed=true
+                MAKE_FULL_DEPLOY=true
               fi
               echo el stack "$stack_cloudfront"
               echo is deployed ? "$is_stack_lambda_deployed"
 
-
-
-              is_requirements_update=false
               if [[ $path == *"requirements"* ]]; then
-                is_requirements_update=true
-              fi              
-
-            # ignore .github folder
-            if [[ "$stack" != ".github" ]]; then
-              # Add build to the matrix only if it is not already included
+                MAKE_FULL_DEPLOY=true
+              fi
+              TEST={\"$stack"\:{\"fullDeploy"\:\"$MAKE_FULL_DEPLOY"\}}
+              echo "$TEST"
               JSONline="\"$stack\","
               if [[ "$JSON" != *"$JSONline"* ]]; then
                 JSON="$JSON$JSONline"
