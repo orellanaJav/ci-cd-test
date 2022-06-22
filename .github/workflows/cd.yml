@@ -183,8 +183,7 @@ jobs:
       matrix:
         stack: ${{ fromJSON(needs.changes.outputs.stack) }}
     runs-on: ubuntu-latest
-    steps:      
-      - uses: actions/setup-python@v4
+    steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:          
