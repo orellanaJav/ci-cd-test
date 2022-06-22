@@ -5,10 +5,6 @@ on:
     branches:
       - 'dev'
       - 'crafting'
-env:
-  STAGE: prueba
-  REGION: holahola
-
 
 jobs:
   get-stage-and-region:
@@ -32,7 +28,7 @@ jobs:
       - name: Set Region For Crafting
         run: |
           echo "STAGE=crafting" >> $GITHUB_ENV
-          echo "REGION=sa-east-1" >> $GITHUB_ENV                                      
+          echo "REGION=sa-east-1" >> $GITHUB_ENV
         if: ${{ steps.extract_current_branch.outputs.branch == 'crafting' }}
 
       - name: Set Region For Release
