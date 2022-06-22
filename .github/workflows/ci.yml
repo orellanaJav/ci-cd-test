@@ -35,7 +35,7 @@ jobs:
         uses: ./.github/actions/slack
         with:
           slack_webhook: ${{ secrets.SLACK_WEBHOOK }}
-          message: "https://github.com/${GITHUB_REPOSITORY}/pull/${{ github.event.number }}"
+          message: "https://github.com/${{ GITHUB_REPOSITORY }}/pull/${{ github.event.number }}"
           title: Despliegue
   # run-unit-tests:
   #  runs-on: ubuntu-latest
