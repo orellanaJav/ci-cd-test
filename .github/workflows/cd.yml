@@ -197,6 +197,10 @@ jobs:
           echo "${{ matrix.stack.stack_name }}"
           echo "${{ matrix.stack.fullDeploy }}"
 
+      - name: Install Dependencies
+        working-directory: ${{ matrix.stack.stack_name }}
+        run: npm install        
+
       - name: Deploy All Stack
         working-directory: ${{ matrix.stack.stack_name }}
         run: echo "${{ matrix.stack.stack_name }}"
@@ -204,7 +208,7 @@ jobs:
       
       - name: Deploy Only Function
         working-directory: ${{ matrix.stack.stack_name }}/services/${{ matrix.stack.lambda }}/core
-        run: npm install -g serverless && sls deploy -f ${{ matrix.stack.lambda }}
+        run: sls deploy -f ${{ matrix.stack.lambda }}
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
