@@ -25,5 +25,6 @@ def lambda_handler(event: dict, context: dict) -> dict:
     :Created:
         - 2022.06.20
     """
-    a = np.arange(15).reshape(3, 5)    
+    a = np.arange(15).reshape(3, 5)
+    print('hola')    
     return {'status': 'status'}

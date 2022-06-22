@@ -230,10 +230,7 @@ jobs:
                     serverless = dump(resource_data, file)        
                     file.close()
                 print(resource_data)
-            """
-      
-      - name: Install Dependencies
-        run: npm install        
+            """      
 
       - name: Deploy All Stack
         working-directory: ${{ matrix.stack.stack_name }}
