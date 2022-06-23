@@ -1,0 +1,20 @@
+name: 'Send a Slack Message for Workflow'
+author: Destacame
+description: 'Send a slack message with workflow information'
+inputs:
+  slack_webhook:
+   description: 'Slack Webhook'
+   required: true
+  message:
+   description: 'Slack Message'
+   required: true
+  title:
+   description: 'Slack Message Title'
+   required: true
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  args:
+   - ${{ inputs.slack_webhook}}
+   - ${{ inputs.message}}
+   - ${{ inputs.title}}
