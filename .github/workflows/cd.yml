@@ -256,4 +256,3 @@ jobs:
         with:
           slack_webhook: ${{ secrets.SLACK_WEBHOOK }}
           message: Despliegue realizado correctamente
-          title: Despliegue
