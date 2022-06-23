@@ -1,8 +1,0 @@
-{
-    "ENVIRONMENT": {},
-    "LAYERS": [
-        "arn:aws:lambda:us-west-1:907015885877:layer:CustomFunction:3"
-    ],
-    "REGION": "us-west-1",
-    "VPC": {}
-}
