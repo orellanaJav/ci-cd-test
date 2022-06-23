@@ -1,4 +1,4 @@
-from settings.config import logger
+from custom_func import cust_fun
 
 __version__ = '0.1.0'
 
@@ -25,5 +25,5 @@ def lambda_handler(event: dict, context: dict) -> dict:
     :Created:
         - 2022.06.23
     """
-    logger.basic_loader(**event)
-    return {'status': 'status'}
+    result = cust_fun()
+    return {'status': 'status', 'result': result}
