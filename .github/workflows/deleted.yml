@@ -40,7 +40,7 @@ jobs:
           # JSON_STRING="[{\"stack_name\":\"$stack\",\"files_deleted\":\"$COUNT_DELETED_FILES_IN_STACK\"}]"
 
           echo "$JSON_STRING" | jq
-          echo "$JSON_STRING" | jq jq -c '.[] | select(.stack_name)'
+          echo "$JSON_STRING" | jq -c '.[] | select(.stack_name)'
 
           if [ -z "$DIFF" ]; then
             echo "::set-output name=folders::[]"
