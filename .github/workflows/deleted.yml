@@ -48,7 +48,7 @@ jobs:
             echo "$VARIABLE"
             COUNT_DELETED_FILES=("$VARIABLE" | jq -r '.files_deleted')
             
-            jq '.files_deleted = "$((COUNT_DELETED_FILES + 1))"' <<<"$VARIABLE"
+            ecjo "$COUNT_DELETED_FILES"
             
 
           else
