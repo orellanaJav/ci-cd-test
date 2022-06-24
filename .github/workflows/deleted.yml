@@ -63,9 +63,9 @@ jobs:
               if [[ "$VARIABLE" ]]; then    
                 COUNT_DELETED_FILES_STACK=$( echo "$VARIABLE" | jq -r '.files_deleted_in_stack' )    
                 COUNT_DELETED_FILES_STACK=$((COUNT_DELETED_FILES_STACK + 1))        
-                jq --arg newkey "$COUNT_DELETED_FILES_STACK" '(.[] | select(.stack_name == "'$stack'")).files_deleted_in_stack |= $newkey' initial_json.json > tmp_json.json
+                jq --arg new_key "$COUNT_DELETED_FILES_STACK" '(.[] | select(.stack_name == "'$stack'")).files_deleted_in_stack |= $new_key' initial_json.json > tmp_json.json
                 if [[ "$COUNT_DELETED_FILES_STACK" == "$initial_files_in_stack" ]]; then 
-                  jq --arg newkey "true" '(.[] | select(.stack_name == "'$stack'")).delete_full_stack |= $newkey' initial_json.json > tmp_json.json
+                  jq --arg new_key "true" '(.[] | select(.stack_name == "'$stack'")).delete_full_stack |= $new_key' initial_json.json > tmp_json.json
                 fi
                 json_file=$(jq . tmp_json.json)    
                 echo "$json_file" > initial_json.json
