@@ -39,6 +39,7 @@ jobs:
           json_file=$(jq . initial_json.json)
           echo "aca cae?"
           echo "$json_file"
+          pwd
 
 
 
