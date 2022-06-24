@@ -147,7 +147,7 @@ jobs:
               if [[ $path == *"requirements"* ]]; then
                 MAKE_FULL_DEPLOY=true
               fi
-              stack_item="{\"stack_name\":\"$stack\",\"fullDeploy\":\"$MAKE_FULL_DEPLOY\",\"lambda\":\"$lambda\"},"              
+              stack_item="{\"stack_name\":\"$stack\",\"fullDeploy\":\"$MAKE_FULL_DEPLOY\",\"lambda\":\"$lambda\"},"
                                           
               if [[ "$json_stack" != *"$stack_item"* ]]; then
                 json_stack="$json_stack$stack_item"
