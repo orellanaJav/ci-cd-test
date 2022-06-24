@@ -34,9 +34,8 @@ jobs:
           COUNT_DELETED_FILES_IN_STACK=0
           COUNT_DELETED_FILES_IN_SERVICE=0
           JSON_STRING="["
-          DELETED_ITEM={\"stack_name\":\"$stack\",\"files_deleted\":\"$COUNT_DELETED_FILES_IN_STACK\"},
-          JSON_STRING=$JSON_STRING$DELETED_ITEM
-          JSON_STRING=$JSON_STRING$]
+          DELETED_ITEM="{\"stack_name\":\"$stack\",\"files_deleted\":\"$COUNT_DELETED_FILES_IN_STACK\"}]"
+          JSON_STRING=$JSON_STRING$DELETED_ITEM          
           # JSON_STRING="[{\"stack_name\":\"$stack\",\"files_deleted\":\"$COUNT_DELETED_FILES_IN_STACK\"}]"
 
 
