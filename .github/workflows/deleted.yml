@@ -41,6 +41,8 @@ jobs:
 
           echo "$JSON_STRING" | jq
           VARIABLE=$(echo "$JSON_STRING" | jq -c '.[] | select(.stack_name | contains("chau"))')
+          echo "LA VARIABLE ES"
+          echo "$VARIABLE"
           echo "$VARIABLE" | jq -r '.stack_name'
 
           if [ -z "$DIFF" ]; then
