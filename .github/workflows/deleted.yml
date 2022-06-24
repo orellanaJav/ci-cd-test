@@ -47,7 +47,7 @@ jobs:
             echo "Existe"
             echo "$VARIABLE"
             COUNT_DELETED_FILES_STACK=$( echo "$VARIABLE" | jq -r '.files_deleted' )
-            jq '.files_deleted = "$((COUNT_DELETED_FILES_STACK + 1))"' <<<"$VARIABLE"
+            jq '.files_deleted = $((COUNT_DELETED_FILES_STACK + 1))' <<<"$VARIABLE"
             echo "$VARIABLE"
             
           fi
