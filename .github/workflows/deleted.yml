@@ -45,9 +45,8 @@ jobs:
               stack_cloudfront="$stack_mid_dash-$lambda_mid_dash-$STAGE"
 
               # Entrar al commit antes de eliminar
-              pwd
-              git checkout ${{ github.event.before }}
-              cd "$stack/services/$lambda"
+              # cd "$stack/services/$lambda"
+              git ls-files | wc -l
               pwd
               ls -la
 
