@@ -46,7 +46,8 @@ jobs:
           if [[ "$VARIABLE" ]]; then
             echo "Existe"
             echo "$VARIABLE"
-            echo "$VARIABLE" | jq -r '.files_deleted'
+            COUNT_FILES_DELETED= echo "$("$VARIABLE" | jq -r '.files_deleted')"
+            echo "$COUNT_FILES_DELETED"
             
           fi
 
