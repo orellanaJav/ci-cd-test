@@ -46,18 +46,9 @@ jobs:
           if [[ "$VARIABLE" ]]; then
             echo "Existe"
             echo "$VARIABLE"
-            COUNT_DELETED_FILES=("$VARIABLE" | jq -r '.files_deleted')
+            echo "$VARIABLE" | jq -r '.stack_name'
             
-            ecjo "$COUNT_DELETED_FILES"
-            
-
-          else
-
-            DELETED_ITEMS="{\"stack_name\":\"$STACK_NAME\",\"files_deleted\":\1},"
-
           fi
-
-          echo "$VARIABLE"
 
           if [ -z "$DIFF" ]; then
             echo "::set-output name=folders::[]"
