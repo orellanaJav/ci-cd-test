@@ -49,10 +49,16 @@ jobs:
               git ls-files | wc -l
               pwd
               ls -la
+              cd "$stack/services"
+              pwd
+              ls -la
 
               echo "CAMBIANDO AL CHECKOUT DEL ELIMINADO"
               git checkout ${{ github.event.before }}
               git ls-files | wc -l
+              pwd
+              ls -la              
+              cd "$stack/services"
               pwd
               ls -la
 
