@@ -70,7 +70,7 @@ jobs:
                 json_file=$(jq . tmp_json.json)    
                 echo "$json_file" > initial_json.json
               else    
-                jq '.[. | length] |= . + {"stack_name": "'$stack'", "files_deleted_in_stack": "1", "initial_files_in_stack": "'$initial_files_in_stack'", "delete_full_stack": "false"}' initial_json.json > tmp_json.json
+                jq '.[. | length] |= . + {"stack_name": "'$stack'", "files_deleted_in_stack": "1", "initial_files_in_stack": "'$initial_files_in_stack'", "delete_full_stack": "false", "lambdas": ""}' initial_json.json > tmp_json.json
                 json_file=$(jq . tmp_json.json)    
                 echo "$json_file" > initial_json.json
               fi
