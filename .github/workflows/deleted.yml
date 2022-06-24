@@ -40,8 +40,8 @@ jobs:
           # JSON_STRING="[{\"stack_name\":\"$stack\",\"files_deleted\":\"$COUNT_DELETED_FILES_IN_STACK\"}]"
 
           echo "$JSON_STRING" | jq
-          VARIABLE=$(echo "$JSON_STRING" | jq -c '.[] | select(.stack_name | contains("chau"))')
-          echo "LA VARIABLE ES"                    
+          VARIABLE=$(echo "$JSON_STRING" | jq -c '.[] | select(.stack_name | contains("hola"))')
+          echo "LA VARIABLE ES"
 
           if [[ "$VARIABLE" ]]; then
             echo "Existe"
