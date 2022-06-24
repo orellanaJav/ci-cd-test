@@ -95,20 +95,20 @@ jobs:
               # fi
 
 
-            # ignore .github folder
+            # # ignore .github folder
 
-            if [[ "$stack" != ".github" && "$lambda" != "" && "$stack" != "" ]]; then
+            # if [[ "$stack" != ".github" && "$lambda" != "" && "$stack" != "" ]]; then
 
-              stack_item_deleted="{\"stack_name\":\"$stack\",\"lambda\":\"$lambda\"},"              
+            #   stack_item_deleted="{\"stack_name\":\"$stack\",\"lambda\":\"$lambda\"},"              
                                           
-              if [[ "$json_stack" != *"$stack_item_deleted"* ]]; then
-                json_stack="$json_stack$stack_item_deleted"
+            #   if [[ "$json_stack" != *"$stack_item_deleted"* ]]; then
+            #     json_stack="$json_stack$stack_item_deleted"
 
-              fi
-            fi
+            #   fi
+            # fi
             
-            # vuelve a la raiz
-            cd
+            # # vuelve a la raiz
+            # cd
 
             done <<< "$DIFF"
 
