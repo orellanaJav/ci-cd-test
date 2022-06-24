@@ -29,7 +29,7 @@ jobs:
           STACKS="${{ needs.stacks.outputs.listStacks }}"
           STAGE="${{ needs.get-stage-and-region.outputs.stage }}"
           REGION="${{ needs.get-stage-and-region.outputs.region }}"
-          MAKE_FULL_DEPLOY=false          
+          MAKE_FULL_DEPLOY=false
 
           if [ -z "$DIFF" ]; then
             echo "::set-output name=folders::[]"
@@ -43,6 +43,11 @@ jobs:
               lambda="$( echo $path | cut -d'/' -f3 -s )"
               lambda_mid_dash="$( echo $lambda | tr _ - )"
               stack_cloudfront="$stack_mid_dash-$lambda_mid_dash-$STAGE"
+
+
+              cd "$stack/services/$lambda"
+              pwd
+              ls -la
 
 
             # ignore .github folder
