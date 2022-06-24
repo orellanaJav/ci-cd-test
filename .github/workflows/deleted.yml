@@ -48,8 +48,8 @@ jobs:
             echo "$VARIABLE"
             COUNT_DELETED_FILES_STACK=$( echo "$VARIABLE" | jq -r '.files_deleted' )
             COUNT_DELETED_FILES_STACK=$((COUNT_DELETED_FILES_STACK + 1))
-            # jq '.files_deleted = $( echo "$COUNT_DELETED_FILES_STACK" )' <<<"$VARIABLE"
-            jq '.files_deleted = $newVal' --arg newVal "$COUNT_DELETED_FILES_STACK" <<<"$VARIABLE"
+            
+            VARIABLE=$( echo jq '.files_deleted = $new_val' --arg new_val "$COUNT_DELETED_FILES_STACK" <<<"$VARIABLE" )
             echo "$VARIABLE"
             
           fi
