@@ -33,8 +33,7 @@ jobs:
           STACK_NAME="hola mundo"
           COUNT_DELETED_FILES_IN_STACK=0
           COUNT_DELETED_FILES_IN_SERVICE=0
-
-          git checkout $GITHUB_SHA
+          
 
           jq -n '[]' > initial_json.json
           json_file=$(jq . initial_json.json)
@@ -52,18 +51,13 @@ jobs:
             json_stack="["            
             while read path; do
               # Set $stack to substring before /
-              stack="$( echo $path | cut -d'/' -f1 -s )"
-              stack_mid_dash="$( echo $stack | tr _ - )"
+              stack="$( echo $path | cut -d'/' -f1 -s )"              
               lambda="$( echo $path | cut -d'/' -f3 -s )"
-              lambda_mid_dash="$( echo $lambda | tr _ - )"
-              stack_cloudfront="$stack_mid_dash-$lambda_mid_dash-$STAGE"
               
               git checkout ${{ github.event.before }}
               cd "$stack"
               initial_files_in_stack=$(git ls-files | wc -l)
-
-
-
+              cd $INITIAL_DIRECTORY
 
               VARIABLE=$(echo "$json_file" | jq -c '.[] | select(.stack_name == "'$stack'")')
               if [[ "$VARIABLE" ]]; then    
@@ -77,45 +71,7 @@ jobs:
                 json_file=$(jq . tmp_json.json)    
                 echo "$json_file" > initial_json.json
               fi
-
-
-
-
-              # # Entrar al commit antes de eliminar
-              # # cd "$stack/services/$lambda"
-              # git ls-files | wc -l
-              # pwd
-              # ls -la
-              # cd "$stack/services"
-              # pwd
-              # ls -la
-
-              # echo "CAMBIANDO AL CHECKOUT DEL ELIMINADO"
-              # git checkout ${{ github.event.before }}
-              # git ls-files | wc -l                            
-              # pwd
-              # ls -la
-
-              # if [[ "$stack" == *"$stack"* ]]; then
-              #   COUNT_DELETED_FILES_IN_STACK=$((COUNT_DELETED_FILES_IN_STACK + 1))
-              # fi
-
-
-            # # ignore .github folder
-
-            # if [[ "$stack" != ".github" && "$lambda" != "" && "$stack" != "" ]]; then
-
-            #   stack_item_deleted="{\"stack_name\":\"$stack\",\"lambda\":\"$lambda\"},"              
-                                          
-            #   if [[ "$json_stack" != *"$stack_item_deleted"* ]]; then
-            #     json_stack="$json_stack$stack_item_deleted"
-
-            #   fi
-            # fi
             
-            # # vuelve a la raiz
-            # cd
-            cd $INITIAL_DIRECTORY
 
             done <<< "$DIFF"
 
