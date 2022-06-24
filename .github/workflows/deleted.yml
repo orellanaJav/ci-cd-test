@@ -33,7 +33,7 @@ jobs:
           STACK_NAME=""
           COUNT_DELETED_FILES_IN_STACK=0
           COUNT_DELETED_FILES_IN_SERVICE=0
-          JSON_STRING="{\"stack_name\":\"$stack\",\"files_deleted\":\"$COUNT_DELETED_FILES_IN_STACK\"},"
+          JSON_STRING="{\"stack_name\":\"$stack\",\"files_deleted\":\"$COUNT_DELETED_FILES_IN_STACK\"}"
           # JSON_STRING=$( jq -n \
           #         --arg stack "$STACK_NAME" \
           #         --arg stack_files_deleted "$COUNT_DELETED_FILES_IN_STACK" \
