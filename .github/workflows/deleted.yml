@@ -46,7 +46,7 @@ jobs:
           if [[ "$VARIABLE" ]]; then
             echo "Existe"
             echo "$VARIABLE"
-            echo "$VARIABLE" | jq -r '.stack_name'
+            echo "$VARIABLE" | jq -r '.files_deleted'
             
           fi
 
