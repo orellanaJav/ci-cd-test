@@ -41,9 +41,13 @@ jobs:
 
           echo "$JSON_STRING" | jq
           VARIABLE=$(echo "$JSON_STRING" | jq -c '.[] | select(.stack_name | contains("chau"))')
-          echo "LA VARIABLE ES"
-          echo "$VARIABLE"
-          echo "$VARIABLE" | jq -r '.stack_name'
+          echo "LA VARIABLE ES"                    
+
+          if [[ "$stack" == *"$stack"* ]]; then
+            echo "Existe"
+            echo "$VARIABLE"
+            echo "$VARIABLE" | jq -r '.stack_name'
+          fi
 
           if [ -z "$DIFF" ]; then
             echo "::set-output name=folders::[]"
@@ -56,7 +60,9 @@ jobs:
               stack_mid_dash="$( echo $stack | tr _ - )"
               lambda="$( echo $path | cut -d'/' -f3 -s )"
               lambda_mid_dash="$( echo $lambda | tr _ - )"
-              stack_cloudfront="$stack_mid_dash-$lambda_mid_dash-$STAGE"              
+              stack_cloudfront="$stack_mid_dash-$lambda_mid_dash-$STAGE"
+
+
 
 
 
