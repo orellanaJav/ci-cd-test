@@ -60,61 +60,19 @@ jobs:
               cd $INITIAL_DIRECTORY
 
               VARIABLE=$(echo "$json_file" | jq -c '.[] | select(.stack_name == "'$stack'")')
-              VARIABLE_LAMBDA=$( echo "$VARIABLE" | jq -r '.lambdas[] | select(.lambda_name == "'$lambda'")' )
-
-
-              if [[ "$VARIABLE_LAMBDA" ]]; then        
-                  COUNT_DELETED_FILES_LAMBDA=$( echo "$VARIABLE_LAMBDA" | jq -r '.files_deleted' )
-                  COUNT_DELETED_FILES_LAMBDA=$((COUNT_DELETED_FILES_LAMBDA + 1))
-                  
-                  arr_lambdas=$(jq --arg new_key "$COUNT_DELETED_FILES_LAMBDA" '(.[] | select(.stack_name == "'$stack'")).lambdas' initial_json.json)
-                  json_file=$(jq . lambdas_tmp.json)
-                  
-
-                  values_lambda=$(jq -c --arg new_key "$COUNT_DELETED_FILES_LAMBDA" '(.[] | select(.stack_name == "'$stack'")).lambdas[] | select(.lambda_name == "'$lambda'").files_deleted |= $new_key' initial_json.json)
-                  arr_lambdas="["
-                  while read lambda; do
-                      arr_lambdas="$arr_lambdas$lambda,"
-                  done <<< "$values_lambda"
-                  
-                  if [[ $arr_lambdas == *, ]]; then
-                      arr_lambdas="${arr_lambdas%?}"
-                  fi
-                  arr_lambdas="$arr_lambdas]"    
-                      
-                  jq --argjson newkey $arr_lambdas '(.[] | select(.stack_name == "'$stack'")).lambdas |= $newkey' initial_json.json > tmp_json.json
-                  
-                  json_file=$(jq . tmp_json.json)    
-                  echo "$json_file" > initial_json.json
-                  
+              if [[ "$VARIABLE" ]]; then    
+                COUNT_DELETED_FILES_STACK=$( echo "$VARIABLE" | jq -r '.files_deleted_in_stack' )    
+                COUNT_DELETED_FILES_STACK=$((COUNT_DELETED_FILES_STACK + 1))        
+                jq --arg new_key "$COUNT_DELETED_FILES_STACK" '(.[] | select(.stack_name == "'$stack'")).files_deleted_in_stack |= $new_key' initial_json.json > tmp_json.json
+                if [[ "$COUNT_DELETED_FILES_STACK" == "$initial_files_in_stack" ]]; then 
+                  jq --arg new_key "true" '(.[] | select(.stack_name == "'$stack'")).delete_full_stack |= $new_key' initial_json.json > tmp_json.json
+                fi
+                json_file=$(jq . tmp_json.json)    
+                echo "$json_file" > initial_json.json
               else    
-                  arr_lambdas='[{"lambda_name":"'$lambda'","files_deleted":"1"},'
-                  values_lambda=$(jq -c '(.[] | select(.stack_name == "'$stack'")).lambdas[]' initial_json.json)    
-                  while read lambda; do
-                      arr_lambdas="$arr_lambdas$lambda,"
-                  done <<< "$values_lambda"
-                  
-                  if [[ $arr_lambdas == *, ]]; then
-                      arr_lambdas="${arr_lambdas%?}"
-                  fi
-                  arr_lambdas="$arr_lambdas]"    
-                  jq --argjson newkey $arr_lambdas '(.[] | select(.stack_name == "'$stack'")).lambdas |= $newkey' initial_json.json > tmp_json.json
-                  json_file=$(jq . tmp_json.json)    
-                  echo "$json_file" > initial_json.json
-              fi
-
-
-              if [[ "$VARIABLE" ]]; then        
-                  COUNT_DELETED_FILES_STACK=$( echo "$VARIABLE" | jq -r '.files_deleted' )
-                  COUNT_DELETED_FILES_STACK=$((COUNT_DELETED_FILES_STACK + 1))
-
-                  jq --arg newkey "$COUNT_DELETED_FILES_STACK" '(.[] | select(.stack_name == "'$stack'")).files_deleted |= $newkey' initial_json.json > tmp_json.json
-                  json_file=$(jq . tmp_json.json)
-                  echo "$json_file" > initial_json.json
-              else    
-                  jq '.[. | length] |= . + {"stack_name": "'$stack'", "files_deleted": "0", "lambdas": []}' initial_json.json > tmp_json.json
-                  json_file=$(jq . tmp_json.json)    
-                  echo "$json_file" > initial_json.json
+                jq '.[. | length] |= . + {"stack_name": "'$stack'", "files_deleted_in_stack": "1", "initial_files_in_stack": "'$initial_files_in_stack'", "delete_full_stack": "false", "lambdas": ""}' initial_json.json > tmp_json.json
+                json_file=$(jq . tmp_json.json)    
+                echo "$json_file" > initial_json.json
               fi
             
 
