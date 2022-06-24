@@ -36,7 +36,7 @@ jobs:
           JSON_STRING=$( jq -n \
                   --arg stack "$STACK_NAME" \
                   --arg stack_files_deleted "$COUNT_DELETED_FILES_IN_STACK" \
-                  '[{stack_name: $stack, files_deleted: $stack_files_deleted}, ]' )
+                  '[{stack_name: $stack, files_deleted: $stack_files_deleted},]' )
 
           echo "$JSON_STRING" | jq
 
