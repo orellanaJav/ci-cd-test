@@ -33,26 +33,14 @@ jobs:
           STACK_NAME="hola mundo"
           COUNT_DELETED_FILES_IN_STACK=0
           COUNT_DELETED_FILES_IN_SERVICE=0
-          JSON_STRING="["
-          DELETED_ITEM="{\"stack_name\":\"$STACK_NAME\",\"files_deleted\":\"$COUNT_DELETED_FILES_IN_STACK\"}, {\"stack_name\":\"que?\",\"files_deleted\":\"$COUNT_DELETED_FILES_IN_STACK\"}"
-          JSON_STRING=$JSON_STRING$DELETED_ITEM
-          JSON_STRING=$JSON_STRING]
-          # JSON_STRING="[{\"stack_name\":\"$stack\",\"files_deleted\":\"$COUNT_DELETED_FILES_IN_STACK\"}]"
 
-          echo "$JSON_STRING" | jq
-          VARIABLE=$(echo "$JSON_STRING" | jq -c '.[] | select(.stack_name | contains("hola"))')
-          echo "LA VARIABLE ES"
 
-          if [[ "$VARIABLE" ]]; then
-            echo "Existe"
-            echo "$VARIABLE"
-            COUNT_DELETED_FILES_STACK=$( echo "$VARIABLE" | jq -r '.files_deleted' )
-            COUNT_DELETED_FILES_STACK=$((COUNT_DELETED_FILES_STACK + 1))
-            
-            jq '.files_deleted = $new_val' --arg new_val "$COUNT_DELETED_FILES_STACK" <<<"$VARIABLE"            
-            
-          fi
-          echo "$VARIABLE"
+          jq -n '[]' > initial_json.json
+          json_file=$(jq . initial_json.json)
+
+
+
+         
           if [ -z "$DIFF" ]; then
             echo "::set-output name=folders::[]"
           else
@@ -69,26 +57,40 @@ jobs:
 
 
 
-
-
-              # Entrar al commit antes de eliminar
-              # cd "$stack/services/$lambda"
-              git ls-files | wc -l
-              pwd
-              ls -la
-              cd "$stack/services"
-              pwd
-              ls -la
-
-              echo "CAMBIANDO AL CHECKOUT DEL ELIMINADO"
-              git checkout ${{ github.event.before }}
-              git ls-files | wc -l                            
-              pwd
-              ls -la
-
-              if [[ "$stack" == *"$stack"* ]]; then
-                COUNT_DELETED_FILES_IN_STACK=$((COUNT_DELETED_FILES_IN_STACK + 1))
+              VARIABLE=$(echo "$json_file" | jq -c '.[] | select(.stack_name == "'$stack'")')
+              if [[ "$VARIABLE" ]]; then    
+                COUNT_DELETED_FILES_STACK=$( echo "$VARIABLE" | jq -r '.files_deleted' )    
+                COUNT_DELETED_FILES_STACK=$((COUNT_DELETED_FILES_STACK + 1))        
+                jq --arg newkey "$COUNT_DELETED_FILES_STACK" '(.[] | select(.stack_name == "'$stack'")).files_deleted |= $newkey' initial_json.json > tmp_json.json
+                json_file=$(jq . tmp_json.json)    
+                echo "$json_file" > initial_json.json
+              else    
+                jq '.[. | length] |= . + {"stack_name": "'$stack'", "files_deleted": "1"}' initial_json.json > tmp_json.json
+                json_file=$(jq . tmp_json.json)    
+                echo "$json_file" > initial_json.json
               fi
+
+
+
+
+              # # Entrar al commit antes de eliminar
+              # # cd "$stack/services/$lambda"
+              # git ls-files | wc -l
+              # pwd
+              # ls -la
+              # cd "$stack/services"
+              # pwd
+              # ls -la
+
+              # echo "CAMBIANDO AL CHECKOUT DEL ELIMINADO"
+              # git checkout ${{ github.event.before }}
+              # git ls-files | wc -l                            
+              # pwd
+              # ls -la
+
+              # if [[ "$stack" == *"$stack"* ]]; then
+              #   COUNT_DELETED_FILES_IN_STACK=$((COUNT_DELETED_FILES_IN_STACK + 1))
+              # fi
 
 
             # ignore .github folder
@@ -113,6 +115,8 @@ jobs:
             fi
             json_stack="$json_stack]"
             echo $json_stack
+
+            echo $(jq . initial_json.json)  | jq
 
             echo "::set-output name=stack::$( echo "$json_stack" )"
           fi
