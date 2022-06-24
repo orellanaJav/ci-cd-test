@@ -2,11 +2,13 @@ name: Test Deploy
 
 on:
   push:
-    branches:
-      - 'crafting'
-      - 'dev'
-      - 'main'
-      - 'release'      
+    branches-ignore:
+      - '**'
+    # branches:
+    #   - 'crafting'
+    #   - 'dev'
+    #   - 'main'
+    #   - 'release'
 env:
   DEV_REGION: sa-east-1  
   RELEASE_REGION: us-east-1

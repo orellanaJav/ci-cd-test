@@ -1,0 +1,68 @@
+name: Test Deleted
+
+on:
+  push:
+    branches:
+      - "crafting"
+
+jobs:
+  track-deleted-files:
+    name: Changes
+    runs-on: ubuntu-latest    
+    outputs:
+      stack: ${{ steps.filter.outputs.stack }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Check changed files
+        id: diff
+        run: |
+          git fetch origin ${{ github.event.before }} --depth=1
+          export DIFF=$( git diff --diff-filter=D --name-only ${{ github.event.before }} $GITHUB_SHA )
+          echo "Diff between ${{ github.event.before }} and $GITHUB_SHA"
+          echo "$DIFF"
+          
+          echo "::set-output name=diff::$( echo "$DIFF" | sed ':a;N;$!ba;s/\n/%0A/g' )"          
+      - name: Set matrix for delete stacks
+        id: filter
+        run: |
+          DIFF="${{ steps.diff.outputs.diff }}"
+          STACKS="${{ needs.stacks.outputs.listStacks }}"
+          STAGE="${{ needs.get-stage-and-region.outputs.stage }}"
+          REGION="${{ needs.get-stage-and-region.outputs.region }}"
+          MAKE_FULL_DEPLOY=false          
+
+          if [ -z "$DIFF" ]; then
+            echo "::set-output name=folders::[]"
+          else
+            JSON="["
+            json_stack="["            
+            while read path; do
+              # Set $stack to substring before /
+              stack="$( echo $path | cut -d'/' -f1 -s )"
+              stack_mid_dash="$( echo $stack | tr _ - )"
+              lambda="$( echo $path | cut -d'/' -f3 -s )"
+              lambda_mid_dash="$( echo $lambda | tr _ - )"
+              stack_cloudfront="$stack_mid_dash-$lambda_mid_dash-$STAGE"
+
+
+            # ignore .github folder
+
+            if [[ "$stack" != ".github" && "$lambda" != "" && "$stack" != "" ]]; then
+
+              stack_item_deleted="{\"stack_name\":\"$stack\",\"lambda\":\"$lambda\"},"              
+                                          
+              if [[ "$json_stack" != *"$stack_item_deleted"* ]]; then
+                json_stack="$json_stack$stack_item_deleted"
+
+              fi
+            fi
+            done <<< "$DIFF"
+
+            if [[ $json_stack == *, ]]; then
+              json_stack="${json_stack%?}"
+            fi
+            json_stack="$json_stack]"
+            echo $json_stack
+
+            echo "::set-output name=stack::$( echo "$json_stack" )"
+          fi
