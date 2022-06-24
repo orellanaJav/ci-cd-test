@@ -61,13 +61,13 @@ jobs:
 
               VARIABLE=$(echo "$json_file" | jq -c '.[] | select(.stack_name == "'$stack'")')
               if [[ "$VARIABLE" ]]; then    
-                COUNT_DELETED_FILES_STACK=$( echo "$VARIABLE" | jq -r '.files_deleted' )    
+                COUNT_DELETED_FILES_STACK=$( echo "$VARIABLE" | jq -r '.files_deleted_in_stack' )    
                 COUNT_DELETED_FILES_STACK=$((COUNT_DELETED_FILES_STACK + 1))        
-                jq --arg newkey "$COUNT_DELETED_FILES_STACK" '(.[] | select(.stack_name == "'$stack'")).files_deleted |= $newkey' initial_json.json > tmp_json.json
+                jq --arg newkey "$COUNT_DELETED_FILES_STACK" '(.[] | select(.stack_name == "'$stack'")).files_deleted_in_stack |= $newkey' initial_json.json > tmp_json.json
                 json_file=$(jq . tmp_json.json)    
                 echo "$json_file" > initial_json.json
               else    
-                jq '.[. | length] |= . + {"stack_name": "'$stack'", "files_deleted": "1", "initial_files_in_stack": "'$initial_files_in_stack'"}' initial_json.json > tmp_json.json
+                jq '.[. | length] |= . + {"stack_name": "'$stack'", "files_deleted_in_stack": "1", "initial_files_in_stack": "'$initial_files_in_stack'"}' initial_json.json > tmp_json.json
                 json_file=$(jq . tmp_json.json)    
                 echo "$json_file" > initial_json.json
               fi
