@@ -30,6 +30,15 @@ jobs:
           STAGE="${{ needs.get-stage-and-region.outputs.stage }}"
           REGION="${{ needs.get-stage-and-region.outputs.region }}"
           MAKE_FULL_DEPLOY=false
+          STACK_NAME=""
+          COUNT_DELETED_FILES_IN_STACK=0
+          COUNT_DELETED_FILES_IN_SERVICE=0
+          JSON_STRING=$( jq -n \
+                  --arg stack "$STACK_NAME" \
+                  --arg stack_files_deleted "$COUNT_DELETED_FILES_IN_STACK" \
+                  '{stack_name: $stack, files_deleted: $stack_files_deleted}' )
+
+          echo "$JSON_STRING" | jq
 
           if [ -z "$DIFF" ]; then
             echo "::set-output name=folders::[]"
@@ -42,7 +51,10 @@ jobs:
               stack_mid_dash="$( echo $stack | tr _ - )"
               lambda="$( echo $path | cut -d'/' -f3 -s )"
               lambda_mid_dash="$( echo $lambda | tr _ - )"
-              stack_cloudfront="$stack_mid_dash-$lambda_mid_dash-$STAGE"
+              stack_cloudfront="$stack_mid_dash-$lambda_mid_dash-$STAGE"              
+
+
+
 
               # Entrar al commit antes de eliminar
               # cd "$stack/services/$lambda"
@@ -55,12 +67,13 @@ jobs:
 
               echo "CAMBIANDO AL CHECKOUT DEL ELIMINADO"
               git checkout ${{ github.event.before }}
-              git ls-files | wc -l
-              pwd
-              ls -la              
-              cd "$stack/services"
+              git ls-files | wc -l                            
               pwd
               ls -la
+
+              if [[ "$stack" == *"$stack"* ]]; then
+                COUNT_DELETED_FILES_IN_STACK=$((COUNT_DELETED_FILES_IN_STACK + 1))
+              fi
 
 
             # ignore .github folder
@@ -74,6 +87,10 @@ jobs:
 
               fi
             fi
+            
+            # vuelve a la raiz
+            cd
+
             done <<< "$DIFF"
 
             if [[ $json_stack == *, ]]; then
