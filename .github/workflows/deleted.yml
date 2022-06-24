@@ -52,7 +52,7 @@ jobs:
             jq '.files_deleted = $new_val' --arg new_val "$COUNT_DELETED_FILES_STACK" <<<"$VARIABLE"            
             
           fi
-
+          echo "$VARIABLE"
           if [ -z "$DIFF" ]; then
             echo "::set-output name=folders::[]"
           else
