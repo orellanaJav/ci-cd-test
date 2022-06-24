@@ -44,7 +44,8 @@ jobs:
               lambda_mid_dash="$( echo $lambda | tr _ - )"
               stack_cloudfront="$stack_mid_dash-$lambda_mid_dash-$STAGE"
 
-
+              # Entrar al commit antes de eliminar
+              git checkout ${{ github.event.before }}
               cd "$stack/services/$lambda"
               pwd
               ls -la
