@@ -1,0 +1,7 @@
+services:
+  test_remove_2:
+    path: services/test_remove_2/core
+  test_remove_3:
+    path: services/test_remove_3/core
+  test_stack_1:
+    path: services/test_stack_1/core
