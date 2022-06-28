@@ -1,5 +1,0 @@
-services:
-  test_remove_1:
-    path: services/test_remove_1/core
-  test_remove_2:
-    path: services/test_remove_2/core

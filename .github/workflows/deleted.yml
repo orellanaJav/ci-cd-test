@@ -233,6 +233,8 @@ jobs:
           echo "$STAGE"
           echo "$REGION"
           echo ${{ matrix.stacks.stack_name }}
+          cd ${{ matrix.stacks.stack_name }}
+          npx serverless remove --stage $STAGE
           # npx serverless remove ${{ matrix.stacks.stack_name }} --stage $STAGE
   
   delete-lambda-service:
