@@ -10,209 +10,228 @@ env:
   PROD_REGION: us-east-1
 
 jobs:
-  get-stage-and-region:
-    name: Get Stage And Region by Branch
+  job1:
     runs-on: ubuntu-latest
     outputs:
-      region: ${{ steps.stage-and-region.outputs.region }}
-      stage: ${{ steps.stage-and-region.outputs.stage }}
-    steps:
-      - name: Get Current Branch
-        shell: bash
-        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
-        id: extract_current_branch
-
-      - name: Set Region For Dev
-        run: |
-          echo "STAGE=dev" >> $GITHUB_ENV
-          echo "REGION=$DEV_REGION" >> $GITHUB_ENV
-        if: ${{ steps.extract_current_branch.outputs.branch == 'dev' }}
-
-      - name: Set Region For Crafting
-        run: |
-          echo "STAGE=dev" >> $GITHUB_ENV
-          echo "REGION=$DEV_REGION" >> $GITHUB_ENV
-        if: ${{ steps.extract_current_branch.outputs.branch == 'crafting' }}
-
-      - name: Set Region For Release
-        run: |
-          eecho "STAGE=release" >> $GITHUB_ENV
-          echo "REGION=$RELEASE_REGION" >> $GITHUB_ENV
-        if: ${{ steps.extract_current_branch.outputs.branch == 'release' }}
-
-      - name: Set Region For Production
-        run: |
-          echo "STAGE=prod" >> $GITHUB_ENV
-          echo "REGION=$PROD_REGION" >> $GITHUB_ENV
-        if: ${{ steps.extract_current_branch.outputs.branch == 'main' }}
-
-      - name: Get Stage And Region
-        id: stage-and-region
-        run: |
-          STAGE="${{ env.STAGE }}"
-          REGION="${{ env.REGION }}"
-          echo "::set-output name=stage::$( echo "$STAGE" )"
-          echo "::set-output name=region::$( echo "$REGION" )"
-
-  track-deleted-files:
-    name: Changes
-    runs-on: ubuntu-latest    
-    outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
-      # lambdas_to_remove: ${{ steps.diff.outputs.lambdas_to_remove }}
     steps:
-      - uses: actions/checkout@v2
-      - name: Check changed files
-        id: diff
-        run: |
-          git fetch origin ${{ github.event.before }} --depth=1
-          export DIFF=$( git diff --diff-filter=D --name-only ${{ github.event.before }} $GITHUB_SHA )
-          echo "Diff between ${{ github.event.before }} and $GITHUB_SHA"
-          echo "$DIFF"
-          
-          echo "::set-output name=diff::$( echo "$DIFF" | sed ':a;N;$!ba;s/\n/%0A/g' )"          
-      - name: Set matrix for delete stacks
-        id: set-matrix
-        run: |
-          DIFF="${{ steps.diff.outputs.diff }}"
-          STACKS="${{ needs.stacks.outputs.listStacks }}"
-          STAGE="${{ needs.get-stage-and-region.outputs.stage }}"
-          REGION="${{ needs.get-stage-and-region.outputs.region }}"
-                    
-          COUNT_DELETED_FILES_IN_STACK=0
-          COUNT_DELETED_FILES_IN_SERVICE=0          
-          
-          # Genera el archivo inicial que contendra la cantidad de archivos
-          # eliminados por stack y servicios lambda.
-          jq -n '[]' > initial_json.json
-          json_file=$(jq . initial_json.json)
-          INITIAL_DIRECTORY=$(pwd)
-         
-          if [ -z "$DIFF" ]; then
-            echo "::set-output name=folders::[]"
-          else
-            JSON="["
-            json_stack="["            
-            while read path; do
-              # Set $stack to substring before /
-              delete_full_stack=false
-              stack="$( echo $path | cut -d'/' -f1 -s )"
-              lambda="$( echo $path | cut -d'/' -f3 -s )"
-              
-              git checkout ${{ github.event.before }}
-              cd "$stack"
-              initial_files_in_stack=$(git ls-files | wc -l)
-              cd $INITIAL_DIRECTORY
-              if [[ "$lambda" ]]; then
-                cd "$stack/services/$lambda"
-                initial_files_in_lambda_service=$(git ls-files | wc -l)
-              fi
-              cd $INITIAL_DIRECTORY
-
-              DATA_STACK=$(echo "$json_file" | jq -c '.[] | select(.stack_name == "'$stack'")')
-              DATA_LAMBDA=$( echo "$DATA_STACK" | jq -r '.lambdas[] | select(.lambda_name == "'$lambda'")' )
-
-              
-              # Se encarga de armar objeto json con todos los archivos eliminados en un stack
-              if [[ "$DATA_STACK" ]]; then
-                  COUNT_DELETED_FILES_STACK=$( echo "$DATA_STACK" | jq -r '.files_deleted_in_stack' )
-                  COUNT_DELETED_FILES_STACK=$((COUNT_DELETED_FILES_STACK + 1))
-                  if [[ "$COUNT_DELETED_FILES_STACK" == "$initial_files_in_stack" ]]; then
-                      delete_full_stack=true
-                      jq '(.[] | select(.stack_name == "'$stack'")).delete_full_stack = true' initial_json.json > tmp_json.json
-                      json_file=$(jq . tmp_json.json)
-                      echo "$json_file" > initial_json.json
-                  fi
-                  jq --arg new_key "$COUNT_DELETED_FILES_STACK" '(.[] | select(.stack_name == "'$stack'")).files_deleted_in_stack |= $new_key' initial_json.json > tmp_json.json
-                  json_file=$(jq . tmp_json.json)
-                  echo "$json_file" > initial_json.json
-              else
-                  jq '.[. | length] |= . + {"stack_name": "'$stack'", "files_deleted_in_stack": "1", "initial_files_in_stack": '$initial_files_in_stack', "delete_full_stack": false, "lambdas": []}' initial_json.json > tmp_json.json
-                  json_file=$(jq . tmp_json.json)
-                  echo "$json_file" > initial_json.json
-              fi
-
-
-              
-              # Se encarga de armar un objeto json con todos los archivos eliminados en un 
-              # service lambda.
-              if [[ "$DATA_LAMBDA" ]]; then
-                  COUNT_DELETED_FILES_LAMBDA=$( echo "$DATA_LAMBDA" | jq -r '.files_deleted' )
-                  COUNT_DELETED_FILES_LAMBDA=$((COUNT_DELETED_FILES_LAMBDA + 1))
-                  
-                  arr_lambdas=$(jq '(.[] | select(.stack_name == "'$stack'")).lambdas' initial_json.json)                  
-
-                  values_lambda=$(jq -c --arg new_key "$COUNT_DELETED_FILES_LAMBDA" '(.[] | select(.stack_name == "'$stack'")).lambdas[] | select(.lambda_name == "'$lambda'").files_deleted |= $new_key' initial_json.json)
-                  arr_lambdas="["
-                  while read lambda_; do
-                      if [[ ($COUNT_DELETED_FILES_LAMBDA == $initial_files_in_lambda_service) && ($delete_full_stack == false) ]]; then
-                          lambda_=$( echo "$lambda_" | jq -c 'select(.lambda_name == "'$lambda'").delete_full_lambda=true' )
-                      fi
-                      arr_lambdas="$arr_lambdas$lambda_,"
-                  done <<< "$values_lambda"
-                  
-                  if [[ $arr_lambdas == *, ]]; then
-                      arr_lambdas="${arr_lambdas::-1}"
-                  fi
-                  arr_lambdas="$arr_lambdas]"
-                  jq --argjson new_key $arr_lambdas '(.[] | select(.stack_name == "'$stack'")).lambdas |= $new_key' initial_json.json > tmp_json.json
-                  json_file=$(jq . tmp_json.json)
-                  echo "$json_file" > initial_json.json
-
-              elif [[ "$lambda" ]]; then
-                  arr_lambdas='[{"lambda_name":"'$lambda'","files_deleted":"1","delete_full_lambda":false,"initial_files_in_lambda_service":'$initial_files_in_lambda_service',"stack_name":"'$stack'"}'
-                  values_lambda=$(jq -c '(.[] | select(.stack_name == "'$stack'")).lambdas[]' initial_json.json)        
-                  while read lambda; do
-                      arr_lambdas="$arr_lambdas,$lambda"
-                  done <<< "$values_lambda"
-
-                  if [[ $arr_lambdas == *, ]]; then        
-                      arr_lambdas=$( echo "${arr_lambdas::-1}" )
-                  fi
-                  arr_lambdas="$arr_lambdas]"
-                  jq --argjson new_key $arr_lambdas '(.[] | select(.stack_name == "'$stack'")).lambdas |= $new_key' initial_json.json > tmp_json.json
-                  json_file=$(jq -c . tmp_json.json)    
-                  echo "$json_file" > initial_json.json
-              fi
-
-            done <<< "$DIFF"
-
-            arr_stored_lambdas="["
-            stored_lambda_values=$(jq -c '(.[] | select(.delete_full_stack == false)).lambdas[] | select(.delete_full_lambda == true)' initial_json.json)
-            while read stored_lambda; do    
-                arr_stored_lambdas="$arr_stored_lambdas$stored_lambda,"
-            done <<< "$stored_lambda_values"
-            if [[ $arr_stored_lambdas == *, ]]; then        
-                arr_stored_lambdas=$( echo "${arr_stored_lambdas::-1}" )
-            fi
-            arr_stored_lambdas="$arr_stored_lambdas]"
-            
-            # echo $(jq . initial_json.json)  | jq
-            # echo "$arr_stored_lambdas"
-            
-            # json_file=$(jq . initial_json.json)
-            # echo "$json_file"
-            # echo "::set-output name=stacks_to_remove::[{\"go\":\"1.13\",\"commit\":\"v1.0.0\"},{\"go\":\"1.14\",\"commit\":\"v1.2.0\"}]"
-            # echo "::set-output name=lambdas_to_remove::$( echo "$arr_stored_lambdas" )"
-            
-            echo "::set-output name=matrix::[{\"go\":\"1.13\",\"commit\":\"v1.0.0\"},{\"go\":\"1.14\",\"commit\":\"v1.2.0\"}]"
-
-          fi
-
-  test:
-    needs: [track-deleted-files]
-    name: test
+    - id: set-matrix
+      run: |
+        echo "::set-output name=matrix::[{\"go\":\"1.13\",\"commit\":\"v1.0.0\"},{\"go\":\"1.14\",\"commit\":\"v1.2.0\"}]"
+  builder:
+    needs: job1
+    runs-on: ubuntu-latest
     strategy:
       matrix: 
         cfg: 
           - ${{fromJson(needs.job1.outputs.matrix)}}
-
-    runs-on: ubuntu-latest
     steps:
-      - name: Remove All Stack        
-        run: |
-          echo bin-${{ matrix.cfg.go }}-${{ matrix.cfg.commit }}
-        # if: ${{ matrix.stacks_to_remove.delete_full_stack == true }}
+    - run: |
+        echo bin-${{ matrix.cfg.go }}-${{ matrix.cfg.commit }}
+  runner:
+    needs: [job1,builder]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        server: 
+          - ${{fromJson(needs.job1.outputs.matrix)}}
+        client:
+          - ${{fromJson(needs.job1.outputs.matrix)}}
+    steps:
+    - run: |
+          echo ${{ matrix.server.go }}-${{ matrix.server.commit }}
+          echo ${{ matrix.client.go }}-${{ matrix.client.commit }}
+
+  # get-stage-and-region:
+  #   name: Get Stage And Region by Branch
+  #   runs-on: ubuntu-latest
+  #   outputs:
+  #     region: ${{ steps.stage-and-region.outputs.region }}
+  #     stage: ${{ steps.stage-and-region.outputs.stage }}
+  #   steps:
+  #     - name: Get Current Branch
+  #       shell: bash
+  #       run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+  #       id: extract_current_branch
+
+  #     - name: Set Region For Dev
+  #       run: |
+  #         echo "STAGE=dev" >> $GITHUB_ENV
+  #         echo "REGION=$DEV_REGION" >> $GITHUB_ENV
+  #       if: ${{ steps.extract_current_branch.outputs.branch == 'dev' }}
+
+  #     - name: Set Region For Crafting
+  #       run: |
+  #         echo "STAGE=dev" >> $GITHUB_ENV
+  #         echo "REGION=$DEV_REGION" >> $GITHUB_ENV
+  #       if: ${{ steps.extract_current_branch.outputs.branch == 'crafting' }}
+
+  #     - name: Set Region For Release
+  #       run: |
+  #         eecho "STAGE=release" >> $GITHUB_ENV
+  #         echo "REGION=$RELEASE_REGION" >> $GITHUB_ENV
+  #       if: ${{ steps.extract_current_branch.outputs.branch == 'release' }}
+
+  #     - name: Set Region For Production
+  #       run: |
+  #         echo "STAGE=prod" >> $GITHUB_ENV
+  #         echo "REGION=$PROD_REGION" >> $GITHUB_ENV
+  #       if: ${{ steps.extract_current_branch.outputs.branch == 'main' }}
+
+  #     - name: Get Stage And Region
+  #       id: stage-and-region
+  #       run: |
+  #         STAGE="${{ env.STAGE }}"
+  #         REGION="${{ env.REGION }}"
+  #         echo "::set-output name=stage::$( echo "$STAGE" )"
+  #         echo "::set-output name=region::$( echo "$REGION" )"
+
+  # track-deleted-files:
+  #   name: Changes
+  #   runs-on: ubuntu-latest    
+  #   outputs:
+  #     matrix: ${{ steps.set-matrix.outputs.matrix }}
+  #     # lambdas_to_remove: ${{ steps.diff.outputs.lambdas_to_remove }}
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: Check changed files
+  #       id: diff
+  #       run: |
+  #         git fetch origin ${{ github.event.before }} --depth=1
+  #         export DIFF=$( git diff --diff-filter=D --name-only ${{ github.event.before }} $GITHUB_SHA )
+  #         echo "Diff between ${{ github.event.before }} and $GITHUB_SHA"
+  #         echo "$DIFF"
+          
+  #         echo "::set-output name=diff::$( echo "$DIFF" | sed ':a;N;$!ba;s/\n/%0A/g' )"          
+  #     - name: Set matrix for delete stacks
+  #       id: set-matrix
+  #       run: |
+  #         DIFF="${{ steps.diff.outputs.diff }}"
+  #         STACKS="${{ needs.stacks.outputs.listStacks }}"
+  #         STAGE="${{ needs.get-stage-and-region.outputs.stage }}"
+  #         REGION="${{ needs.get-stage-and-region.outputs.region }}"
+                    
+  #         COUNT_DELETED_FILES_IN_STACK=0
+  #         COUNT_DELETED_FILES_IN_SERVICE=0          
+          
+  #         # Genera el archivo inicial que contendra la cantidad de archivos
+  #         # eliminados por stack y servicios lambda.
+  #         jq -n '[]' > initial_json.json
+  #         json_file=$(jq . initial_json.json)
+  #         INITIAL_DIRECTORY=$(pwd)
+         
+  #         if [ -z "$DIFF" ]; then
+  #           echo "::set-output name=folders::[]"
+  #         else
+  #           JSON="["
+  #           json_stack="["            
+  #           while read path; do
+  #             # Set $stack to substring before /
+  #             delete_full_stack=false
+  #             stack="$( echo $path | cut -d'/' -f1 -s )"
+  #             lambda="$( echo $path | cut -d'/' -f3 -s )"
+              
+  #             git checkout ${{ github.event.before }}
+  #             cd "$stack"
+  #             initial_files_in_stack=$(git ls-files | wc -l)
+  #             cd $INITIAL_DIRECTORY
+  #             if [[ "$lambda" ]]; then
+  #               cd "$stack/services/$lambda"
+  #               initial_files_in_lambda_service=$(git ls-files | wc -l)
+  #             fi
+  #             cd $INITIAL_DIRECTORY
+
+  #             DATA_STACK=$(echo "$json_file" | jq -c '.[] | select(.stack_name == "'$stack'")')
+  #             DATA_LAMBDA=$( echo "$DATA_STACK" | jq -r '.lambdas[] | select(.lambda_name == "'$lambda'")' )
+
+              
+  #             # Se encarga de armar objeto json con todos los archivos eliminados en un stack
+  #             if [[ "$DATA_STACK" ]]; then
+  #                 COUNT_DELETED_FILES_STACK=$( echo "$DATA_STACK" | jq -r '.files_deleted_in_stack' )
+  #                 COUNT_DELETED_FILES_STACK=$((COUNT_DELETED_FILES_STACK + 1))
+  #                 if [[ "$COUNT_DELETED_FILES_STACK" == "$initial_files_in_stack" ]]; then
+  #                     delete_full_stack=true
+  #                     jq '(.[] | select(.stack_name == "'$stack'")).delete_full_stack = true' initial_json.json > tmp_json.json
+  #                     json_file=$(jq . tmp_json.json)
+  #                     echo "$json_file" > initial_json.json
+  #                 fi
+  #                 jq --arg new_key "$COUNT_DELETED_FILES_STACK" '(.[] | select(.stack_name == "'$stack'")).files_deleted_in_stack |= $new_key' initial_json.json > tmp_json.json
+  #                 json_file=$(jq . tmp_json.json)
+  #                 echo "$json_file" > initial_json.json
+  #             else
+  #                 jq '.[. | length] |= . + {"stack_name": "'$stack'", "files_deleted_in_stack": "1", "initial_files_in_stack": '$initial_files_in_stack', "delete_full_stack": false, "lambdas": []}' initial_json.json > tmp_json.json
+  #                 json_file=$(jq . tmp_json.json)
+  #                 echo "$json_file" > initial_json.json
+  #             fi
+
+
+              
+  #             # Se encarga de armar un objeto json con todos los archivos eliminados en un 
+  #             # service lambda.
+  #             if [[ "$DATA_LAMBDA" ]]; then
+  #                 COUNT_DELETED_FILES_LAMBDA=$( echo "$DATA_LAMBDA" | jq -r '.files_deleted' )
+  #                 COUNT_DELETED_FILES_LAMBDA=$((COUNT_DELETED_FILES_LAMBDA + 1))
+                  
+  #                 arr_lambdas=$(jq '(.[] | select(.stack_name == "'$stack'")).lambdas' initial_json.json)                  
+
+  #                 values_lambda=$(jq -c --arg new_key "$COUNT_DELETED_FILES_LAMBDA" '(.[] | select(.stack_name == "'$stack'")).lambdas[] | select(.lambda_name == "'$lambda'").files_deleted |= $new_key' initial_json.json)
+  #                 arr_lambdas="["
+  #                 while read lambda_; do
+  #                     if [[ ($COUNT_DELETED_FILES_LAMBDA == $initial_files_in_lambda_service) && ($delete_full_stack == false) ]]; then
+  #                         lambda_=$( echo "$lambda_" | jq -c 'select(.lambda_name == "'$lambda'").delete_full_lambda=true' )
+  #                     fi
+  #                     arr_lambdas="$arr_lambdas$lambda_,"
+  #                 done <<< "$values_lambda"
+                  
+  #                 if [[ $arr_lambdas == *, ]]; then
+  #                     arr_lambdas="${arr_lambdas::-1}"
+  #                 fi
+  #                 arr_lambdas="$arr_lambdas]"
+  #                 jq --argjson new_key $arr_lambdas '(.[] | select(.stack_name == "'$stack'")).lambdas |= $new_key' initial_json.json > tmp_json.json
+  #                 json_file=$(jq . tmp_json.json)
+  #                 echo "$json_file" > initial_json.json
+
+  #             elif [[ "$lambda" ]]; then
+  #                 arr_lambdas='[{"lambda_name":"'$lambda'","files_deleted":"1","delete_full_lambda":false,"initial_files_in_lambda_service":'$initial_files_in_lambda_service',"stack_name":"'$stack'"}'
+  #                 values_lambda=$(jq -c '(.[] | select(.stack_name == "'$stack'")).lambdas[]' initial_json.json)        
+  #                 while read lambda; do
+  #                     arr_lambdas="$arr_lambdas,$lambda"
+  #                 done <<< "$values_lambda"
+
+  #                 if [[ $arr_lambdas == *, ]]; then        
+  #                     arr_lambdas=$( echo "${arr_lambdas::-1}" )
+  #                 fi
+  #                 arr_lambdas="$arr_lambdas]"
+  #                 jq --argjson new_key $arr_lambdas '(.[] | select(.stack_name == "'$stack'")).lambdas |= $new_key' initial_json.json > tmp_json.json
+  #                 json_file=$(jq -c . tmp_json.json)    
+  #                 echo "$json_file" > initial_json.json
+  #             fi
+
+  #           done <<< "$DIFF"
+
+  #           arr_stored_lambdas="["
+  #           stored_lambda_values=$(jq -c '(.[] | select(.delete_full_stack == false)).lambdas[] | select(.delete_full_lambda == true)' initial_json.json)
+  #           while read stored_lambda; do    
+  #               arr_stored_lambdas="$arr_stored_lambdas$stored_lambda,"
+  #           done <<< "$stored_lambda_values"
+  #           if [[ $arr_stored_lambdas == *, ]]; then        
+  #               arr_stored_lambdas=$( echo "${arr_stored_lambdas::-1}" )
+  #           fi
+  #           arr_stored_lambdas="$arr_stored_lambdas]"
+            
+  #           # echo $(jq . initial_json.json)  | jq
+  #           # echo "$arr_stored_lambdas"
+            
+  #           # json_file=$(jq . initial_json.json)
+  #           # echo "$json_file"
+  #           # echo "::set-output name=stacks_to_remove::[{\"go\":\"1.13\",\"commit\":\"v1.0.0\"},{\"go\":\"1.14\",\"commit\":\"v1.2.0\"}]"
+  #           # echo "::set-output name=lambdas_to_remove::$( echo "$arr_stored_lambdas" )"
+            
+  #           echo "::set-output name=matrix::[{\"go\":\"1.13\",\"commit\":\"v1.0.0\"},{\"go\":\"1.14\",\"commit\":\"v1.2.0\"}]"
+
+  #         fi
+
+
 
   # stacks_to_remove:
   #   needs: [track-deleted-files, get-stage-and-region]
