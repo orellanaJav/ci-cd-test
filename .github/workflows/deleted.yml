@@ -217,7 +217,8 @@ jobs:
       - name: Remove Full Stack
         if: ${{ matrix.stacks.delete_full_stack == true }}        
         run: |
-          git checkout ${{ github.event.before }}
+          echo ${{ github.event.before }}
+          echo $GITHUB_SHA
           pwd
           ls -la
           STAGE="${{ needs.get-stage-and-region.outputs.stage }}"
