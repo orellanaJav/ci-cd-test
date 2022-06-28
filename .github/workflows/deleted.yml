@@ -191,12 +191,24 @@ jobs:
             # echo "$arr_stored_lambdas"
             
             # json_file=$(jq . initial_json.json)
-            echo "$json_file"
-            # echo "::set-output name=stacks_to_remove::$( echo "$json_file" )"
+            # echo "$json_file"
+            echo "::set-output name=stacks_to_remove::$( echo "$json_file" )"
             # echo "::set-output name=lambdas_to_remove::$( echo "$arr_stored_lambdas" )"
 
           fi
 
+  test:
+    needs: [track-deleted-files]
+    name: test
+    strategy:
+      matrix:
+        stack: ${{ needs.track-deleted.outputs.stacks_to_remove }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Remove All Stack        
+        run: |
+          echo "${{ needs.track-deleted.outputs.stacks_to_remove }}"
+        # if: ${{ matrix.stacks_to_remove.delete_full_stack == true }}
 
   # stacks_to_remove:
   #   needs: [track-deleted-files, get-stage-and-region]
