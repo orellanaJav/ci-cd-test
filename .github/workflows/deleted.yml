@@ -31,9 +31,6 @@ jobs:
       run: |
         DIFF="${{ steps.diff.outputs.diff }}"
         STACKS="${{ needs.stacks.outputs.listStacks }}"
-        STAGE="${{ needs.get-stage-and-region.outputs.stage }}"
-        REGION="${{ needs.get-stage-and-region.outputs.region }}"
-                  
         COUNT_DELETED_FILES_IN_STACK=0
         COUNT_DELETED_FILES_IN_SERVICE=0          
         
@@ -191,6 +188,7 @@ jobs:
 
   delete-stack:
     needs: [track-deleted-files, get-stage-and-region]
+    if: ${{ needs.track-deleted-files.outputs.stacks-to-remove != '[]' && needs.track-deleted-files.outputs.stacks-to-remove != '' }}
     runs-on: ubuntu-latest
     strategy:
       matrix: 
@@ -198,6 +196,10 @@ jobs:
           - ${{fromJson(needs.track-deleted-files.outputs.stacks-to-remove)}}
     steps:
     - run: |
+        STAGE="${{ needs.get-stage-and-region.outputs.stage }}"
+        REGION="${{ needs.get-stage-and-region.outputs.region }}"
+        echo "$STAGE"
+        echo "$REGION"
         echo ${{ matrix.stacks.stack_name }}
   
   # get-stage-and-region:
