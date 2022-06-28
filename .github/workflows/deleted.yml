@@ -58,8 +58,8 @@ jobs:
     name: Changes
     runs-on: ubuntu-latest    
     outputs:
-      stacks_to_remove: ${{ steps.filter.outputs.stack }}
-      lambdas_to_remove: ${{ steps.filter.outputs.stack }}
+      stacks_to_remove: ${{ steps.diff.outputs.stacks_to_remove }}
+      lambdas_to_remove: ${{ steps.diff.outputs.lambdas_to_remove }}
     steps:
       - uses: actions/checkout@v2
       - name: Check changed files
@@ -187,8 +187,8 @@ jobs:
             fi
             arr_stored_lambdas="$arr_stored_lambdas]"
             
-            echo $(jq . initial_json.json)  | jq
-            echo "$arr_stored_lambdas"
+            # echo $(jq . initial_json.json)  | jq
+            # echo "$arr_stored_lambdas"
             
             json_file=$(jq . initial_json.json)
             echo "::set-output name=stacks_to_remove::$( echo "$json_file" )"
