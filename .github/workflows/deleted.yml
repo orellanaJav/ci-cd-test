@@ -30,6 +30,8 @@ jobs:
     - name: Set matrix for delete stacks
       id: set-matrix
       run: |
+        pwd
+        ls -la
         DIFF="${{ steps.diff.outputs.diff }}"
         STACKS="${{ needs.stacks.outputs.listStacks }}"
         COUNT_DELETED_FILES_IN_STACK=0
