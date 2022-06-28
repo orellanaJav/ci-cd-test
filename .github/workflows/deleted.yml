@@ -91,8 +91,7 @@ jobs:
                   COUNT_DELETED_FILES_LAMBDA=$( echo "$DATA_LAMBDA" | jq -r '.files_deleted' )
                   COUNT_DELETED_FILES_LAMBDA=$((COUNT_DELETED_FILES_LAMBDA + 1))
                   
-                  arr_lambdas=$(jq '(.[] | select(.stack_name == "'$stack'")).lambdas' initial_json.json)
-                  json_file=$(jq . lambdas_tmp.json)
+                  arr_lambdas=$(jq '(.[] | select(.stack_name == "'$stack'")).lambdas' initial_json.json)                  
 
                   values_lambda=$(jq -c --arg new_key "$COUNT_DELETED_FILES_LAMBDA" '(.[] | select(.stack_name == "'$stack'")).lambdas[] | select(.lambda_name == "'$lambda'").files_deleted |= $new_key' initial_json.json)
                   arr_lambdas="["
