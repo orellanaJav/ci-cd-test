@@ -11,6 +11,7 @@ env:
 
 jobs:
   track-deleted-files:
+    name: Track All Deleted Files
     runs-on: ubuntu-latest
     outputs:
       stacks-to-remove: ${{ steps.set-matrix.outputs.stacks-to-remove }}
@@ -210,7 +211,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
       - name: Remove full stack
-        if: ${{ needs.track-deleted-files.outputs.stacks-to-remove.delete_full_stack == true }}
+        if: ${{ needs.track-deleted-files.outputs.stacks-to-remove.delete_full_stack == "true" }}
         working-directory: ${{ matrix.stacks.stack_name }}
         run: |
           STAGE="${{ needs.get-stage-and-region.outputs.stage }}"
