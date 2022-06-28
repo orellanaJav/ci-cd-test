@@ -155,7 +155,7 @@ jobs:
           # echo "::set-output name=matrix::[{\"go\":\"1.13\",\"commit\":\"v1.0.0\"},{\"go\":\"1.14\",\"commit\":\"v1.2.0\"}]"
 
         fi
-        json_file=$(jq . initial_json.json)
+        json_file=$(jq -c . initial_json.json)
         echo "$json_file"
         # echo "::set-output name=matrix::$( echo "$json_file" )"
         variable_test=[{\"go\":\"1.13\",\"commit\":\"v1.0.0\"},{\"go\":\"1.14\",\"commit\":\"v1.2.0\"}]
