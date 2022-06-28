@@ -10,7 +10,7 @@ env:
   PROD_REGION: us-east-1
 
 jobs:
-  job1:
+  track-deleted-files:
     runs-on: ubuntu-latest
     outputs:
       stacks-to-remove: ${{ steps.set-matrix.outputs.stacks-to-remove }}
@@ -24,9 +24,7 @@ jobs:
         export DIFF=$( git diff --diff-filter=D --name-only ${{ github.event.before }} $GITHUB_SHA )
         echo "Diff between ${{ github.event.before }} and $GITHUB_SHA"
         echo "$DIFF"
-        
-        echo "::set-output name=diff::$( echo "$DIFF" | sed ':a;N;$!ba;s/\n/%0A/g' )"
-        # echo "::set-output name=matrix::[{\"go\":\"1.13\",\"commit\":\"v1.0.0\"},{\"go\":\"1.14\",\"commit\":\"v1.2.0\"}]"
+        echo "::set-output name=diff::$( echo "$DIFF" | sed ':a;N;$!ba;s/\n/%0A/g' )"        
     
     - name: Set matrix for delete stacks
       id: set-matrix
@@ -146,18 +144,18 @@ jobs:
         fi
         arr_stored_lambdas="$arr_stored_lambdas]"
         echo "::set-output name=stacks-to-remove::$( echo "$json_file" )"
-        # echo "::set-output name=lambdas-to-remove::$( echo "$json_file" )"
+        
 
   builder:
-    needs: job1
+    needs: [track-deleted-files]
     runs-on: ubuntu-latest
     strategy:
       matrix: 
-        cfg: 
-          - ${{fromJson(needs.job1.outputs.stacks-to-remove)}}
+        stacks: 
+          - ${{fromJson(needs.track-deleted-files.outputs.stacks-to-remove)}}
     steps:
     - run: |
-        echo ${{ matrix }}
+        echo ${{ matrix.stacks }}
   
   # get-stage-and-region:
   #   name: Get Stage And Region by Branch
