@@ -282,6 +282,10 @@ jobs:
           echo "$STAGE"
           echo "$REGION"
           echo ${{ matrix.lambdas.lambda_name }}
+
+          cd ${{ matrix.lambdas.stack_name }}/services/${{ matrix.lambdas.lambda_name }}/core
+          npx serverless remove --stage $STAGE
+          # npx serverless remove ${{ matrix.stacks.stack_name }} --stage $STAGE
           # npx serverless remove ${{ matrix.stacks.stack_name }} --stage $STAGE
 
   # get-stage-and-region:
