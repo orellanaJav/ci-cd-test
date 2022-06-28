@@ -197,7 +197,7 @@ jobs:
           - ${{fromJson(needs.track-deleted-files.outputs.stacks-to-remove)}}
     steps:      
       - uses: actions/checkout@v2
-        if: ${{ needs.track-deleted-files.outputs.stacks-to-remove.delete_full_stack == 'true' }}
+        if: ${{ needs.track-deleted-files.outputs.stacks-to-remove.delete_full_stack == true }}
       - name: Cache node_modules
         uses: actions/cache@v1
         with:
@@ -206,14 +206,14 @@ jobs:
           restore-keys: |
             node-
       - name: Configure AWS Credentials
-        if: ${{ needs.track-deleted-files.outputs.stacks-to-remove.delete_full_stack == 'true' }}
+        if: ${{ needs.track-deleted-files.outputs.stacks-to-remove.delete_full_stack == true }}
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
       - name: Remove Full Stack
-        if: ${{ needs.track-deleted-files.outputs.stacks-to-remove.delete_full_stack == 'true' }}
+        if: ${{ needs.track-deleted-files.outputs.stacks-to-remove.delete_full_stack == true }}
         working-directory: ${{ matrix.stacks.stack_name }}
         run: |
           STAGE="${{ needs.get-stage-and-region.outputs.stage }}"
