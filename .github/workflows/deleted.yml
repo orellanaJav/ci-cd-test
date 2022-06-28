@@ -32,7 +32,7 @@ jobs:
                     
           COUNT_DELETED_FILES_IN_STACK=0
           COUNT_DELETED_FILES_IN_SERVICE=0
-          lambas_to_remove_completely="["
+          lambdas_to_remove_completely="["
           
           # Genera el archivo inicial que contendra la cantidad de archivos
           # eliminados por stack y servicios lambda.
@@ -47,7 +47,8 @@ jobs:
             json_stack="["            
             while read path; do
               # Set $stack to substring before /
-              stack="$( echo $path | cut -d'/' -f1 -s )"              
+              delete_full_stack="false"
+              stack="$( echo $path | cut -d'/' -f1 -s )"
               lambda="$( echo $path | cut -d'/' -f3 -s )"
               
               git checkout ${{ github.event.before }}
@@ -67,8 +68,9 @@ jobs:
               if [[ "$DATA_STACK" ]]; then
                   COUNT_DELETED_FILES_STACK=$( echo "$DATA_STACK" | jq -r '.files_deleted_in_stack' )
                   COUNT_DELETED_FILES_STACK=$((COUNT_DELETED_FILES_STACK + 1))
-                  if [[ "$COUNT_DELETED_FILES_STACK" == "$initial_files_in_stack" ]]; then 
-                      jq --arg new_key "true" '(.[] | select(.stack_name == "'$stack'")).delete_full_stack |= $new_key' initial_json.json > tmp_json.json
+                  if [[ "$COUNT_DELETED_FILES_STACK" == "$initial_files_in_stack" ]]; then
+                      delete_full_stack="true"
+                      jq --arg new_key "'$delete_full_stack'" '(.[] | select(.stack_name == "'$stack'")).delete_full_stack |= $new_key' initial_json.json > tmp_json.json
                       json_file=$(jq . tmp_json.json)
                       echo "$json_file" > initial_json.json
                   fi
@@ -93,7 +95,7 @@ jobs:
                   values_lambda=$(jq -c --arg new_key "$COUNT_DELETED_FILES_LAMBDA" '(.[] | select(.stack_name == "'$stack'")).lambdas[] | select(.lambda_name == "'$lambda'").files_deleted |= $new_key' initial_json.json)
                   arr_lambdas="["
                   while read lambda_; do
-                      if [[ $COUNT_DELETED_FILES_LAMBDA == $initial_files_in_lambda_service ]]; then
+                      if [[ ($COUNT_DELETED_FILES_LAMBDA == $initial_files_in_lambda_service) && ($delete_full_stack == "false") ]]; then
                           lambda_=$( echo "$lambda_" | jq -c 'select(.lambda_name == "'$lambda'").delete_full_lambda="true"' )
                           lambas_to_remove_completely="$lambas_to_remove_completely$lambda_,"
                       fi
@@ -127,10 +129,10 @@ jobs:
             done <<< "$DIFF"
 
             echo $(jq . initial_json.json)  | jq
-            if [[ $lambas_to_remove_completely == *, ]]; then
-                lambas_to_remove_completely="${lambas_to_remove_completely::-1}"
+            if [[ $lambdas_to_remove_completely == *, ]]; then
+                lambdas_to_remove_completely="${lambdas_to_remove_completely::-1}"
             fi
-                lambas_to_remove_completely="$lambas_to_remove_completely]"
-            echo "$lambas_to_remove_completely" |jq
+                lambdas_to_remove_completely="$lambdas_to_remove_completely]"
+            echo "$lambdas_to_remove_completely" |jq
             
           fi
