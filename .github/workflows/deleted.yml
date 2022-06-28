@@ -98,7 +98,7 @@ jobs:
                       if [[ ($COUNT_DELETED_FILES_LAMBDA == $initial_files_in_lambda_service) && ($delete_full_stack == "false") ]]; then
                           echo "remove completely $lambda"
                           lambda_=$( echo "$lambda_" | jq -c 'select(.lambda_name == "'$lambda'").delete_full_lambda="true"' )
-                          lambas_to_remove_completely="$lambas_to_remove_completely$lambda_,"
+                          lambdas_to_remove_completely="$lambdas_to_remove_completely$lambda_,"
                       fi
                       arr_lambdas="$arr_lambdas$lambda_,"
                   done <<< "$values_lambda"
