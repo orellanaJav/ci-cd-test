@@ -171,7 +171,7 @@ jobs:
                   fi
                   arr_lambdas="$arr_lambdas]"
                   jq --argjson new_key $arr_lambdas '(.[] | select(.stack_name == "'$stack'")).lambdas |= $new_key' initial_json.json > tmp_json.json
-                  json_file=$(jq . tmp_json.json)    
+                  json_file=$(jq -c . tmp_json.json)    
                   echo "$json_file" > initial_json.json
               fi
 
