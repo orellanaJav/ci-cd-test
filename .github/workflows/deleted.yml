@@ -155,7 +155,11 @@ jobs:
           # echo "::set-output name=matrix::[{\"go\":\"1.13\",\"commit\":\"v1.0.0\"},{\"go\":\"1.14\",\"commit\":\"v1.2.0\"}]"
 
         fi
-        echo "::set-output name=matrix::[{\"go\":\"1.13\",\"commit\":\"v1.0.0\"},{\"go\":\"1.14\",\"commit\":\"v1.2.0\"}]"
+        json_file=$(jq . initial_json.json)
+        echo "::set-output name=matrix::$( echo "$json_file" )"
+
+
+        # echo "::set-output name=matrix::[{\"go\":\"1.13\",\"commit\":\"v1.0.0\"},{\"go\":\"1.14\",\"commit\":\"v1.2.0\"}]"
 
       
   
@@ -168,7 +172,7 @@ jobs:
           - ${{fromJson(needs.job1.outputs.matrix)}}
     steps:
     - run: |
-        echo bin-${{ matrix.cfg.go }}-${{ matrix.cfg.commit }}
+        echo ${{ matrix.cfg }}
   
   # get-stage-and-region:
   #   name: Get Stage And Region by Branch
