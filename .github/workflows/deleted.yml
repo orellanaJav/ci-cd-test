@@ -13,11 +13,21 @@ jobs:
   job1:
     runs-on: ubuntu-latest
     outputs:
-      matrix: ${{ steps.set-matrix.outputs.matrix }}
+      matrix: ${{ steps.diff.outputs.matrix }}
+      # matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
-    - id: set-matrix
+    - uses: actions/checkout@v2
+    - name: Check changed files
+      id: diff
       run: |
+        git fetch origin ${{ github.event.before }} --depth=1
+        export DIFF=$( git diff --diff-filter=D --name-only ${{ github.event.before }} $GITHUB_SHA )
+        echo "Diff between ${{ github.event.before }} and $GITHUB_SHA"
+        echo "$DIFF"
+        
+        # echo "::set-output name=diff::$( echo "$DIFF" | sed ':a;N;$!ba;s/\n/%0A/g' )"
         echo "::set-output name=matrix::[{\"go\":\"1.13\",\"commit\":\"v1.0.0\"},{\"go\":\"1.14\",\"commit\":\"v1.2.0\"}]"
+      
   
   builder:
     needs: job1
