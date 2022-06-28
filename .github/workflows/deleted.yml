@@ -13,7 +13,7 @@ jobs:
   job1:
     runs-on: ubuntu-latest
     outputs:
-      matrix: ${{ steps.set-matrix.outputs.matrix }}
+      stacks-to-remove: ${{ steps.set-matrix.outputs.stacks-to-remove }}
       # matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
     - uses: actions/checkout@v2
@@ -133,20 +133,20 @@ jobs:
             fi
 
           done <<< "$DIFF"
-
-          arr_stored_lambdas="["
-          stored_lambda_values=$(jq -c '(.[] | select(.delete_full_stack == false)).lambdas[] | select(.delete_full_lambda == true)' initial_json.json)
-          while read stored_lambda; do    
-              arr_stored_lambdas="$arr_stored_lambdas$stored_lambda,"
-          done <<< "$stored_lambda_values"
-          if [[ $arr_stored_lambdas == *, ]]; then        
-              arr_stored_lambdas=$( echo "${arr_stored_lambdas::-1}" )
-          fi
-          arr_stored_lambdas="$arr_stored_lambdas]"
           
         fi
-        json_file=$(jq -c . initial_json.json)                        
-        echo "::set-output name=matrix::$( echo "$json_file" )"
+        json_file=$(jq -c . initial_json.json)
+        arr_stored_lambdas="["
+        stored_lambda_values=$(jq -c '(.[] | select(.delete_full_stack == false)).lambdas[] | select(.delete_full_lambda == true)' initial_json.json)
+        while read stored_lambda; do    
+            arr_stored_lambdas="$arr_stored_lambdas$stored_lambda,"
+        done <<< "$stored_lambda_values"
+        if [[ $arr_stored_lambdas == *, ]]; then        
+            arr_stored_lambdas=$( echo "${arr_stored_lambdas::-1}" )
+        fi
+        arr_stored_lambdas="$arr_stored_lambdas]"
+        echo "::set-output name=stacks-to-remove::$( echo "$json_file" )"
+        # echo "::set-output name=lambdas-to-remove::$( echo "$json_file" )"
 
   builder:
     needs: job1
@@ -154,7 +154,7 @@ jobs:
     strategy:
       matrix: 
         cfg: 
-          - ${{fromJson(needs.job1.outputs.matrix)}}
+          - ${{fromJson(needs.job1.outputs.stacks-to-remove)}}
     steps:
     - run: |
         echo ${{ matrix }}
