@@ -58,7 +58,7 @@ jobs:
     name: Changes
     runs-on: ubuntu-latest    
     outputs:
-      stacks_to_remove: ${{ toJson(steps.filter.outputs.stacks_to_remove) }}
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
       # lambdas_to_remove: ${{ steps.diff.outputs.lambdas_to_remove }}
     steps:
       - uses: actions/checkout@v2
@@ -72,7 +72,7 @@ jobs:
           
           echo "::set-output name=diff::$( echo "$DIFF" | sed ':a;N;$!ba;s/\n/%0A/g' )"          
       - name: Set matrix for delete stacks
-        id: filter
+        id: set-matrix
         run: |
           DIFF="${{ steps.diff.outputs.diff }}"
           STACKS="${{ needs.stacks.outputs.listStacks }}"
@@ -191,9 +191,11 @@ jobs:
             # echo "$arr_stored_lambdas"
             
             # json_file=$(jq . initial_json.json)
-            echo "$json_file"
-            echo "::set-output name=stacks_to_remove::[{\"go\":\"1.13\",\"commit\":\"v1.0.0\"},{\"go\":\"1.14\",\"commit\":\"v1.2.0\"}]"
+            # echo "$json_file"
+            # echo "::set-output name=stacks_to_remove::[{\"go\":\"1.13\",\"commit\":\"v1.0.0\"},{\"go\":\"1.14\",\"commit\":\"v1.2.0\"}]"
             # echo "::set-output name=lambdas_to_remove::$( echo "$arr_stored_lambdas" )"
+            
+            echo "::set-output name=matrix::[{\"go\":\"1.13\",\"commit\":\"v1.0.0\"},{\"go\":\"1.14\",\"commit\":\"v1.2.0\"}]"
 
           fi
 
@@ -201,13 +203,15 @@ jobs:
     needs: [track-deleted-files]
     name: test
     strategy:
-      matrix:
-        stack: ${{ needs.track-deleted.outputs.stacks_to_remove }}
+      matrix: 
+        cfg: 
+          - ${{fromJson(needs.job1.outputs.matrix)}}
+
     runs-on: ubuntu-latest
     steps:
       - name: Remove All Stack        
         run: |
-          echo "${{ needs.track-deleted.outputs.stacks_to_remove }}"
+          echo bin-${{ matrix.cfg.go }}-${{ matrix.cfg.commit }}
         # if: ${{ matrix.stacks_to_remove.delete_full_stack == true }}
 
   # stacks_to_remove:
