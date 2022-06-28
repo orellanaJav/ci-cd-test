@@ -145,10 +145,7 @@ jobs:
           arr_stored_lambdas="$arr_stored_lambdas]"
           
         fi
-        json_file=$(jq -c . initial_json.json)
-        echo "$json_file"        
-        variable_test=[{\"go\":\"1.13\",\"commit\":\"v1.0.0\"},{\"go\":\"1.14\",\"commit\":\"v1.2.0\"}]
-        echo "$variable_test"
+        json_file=$(jq -c . initial_json.json)                        
         echo "::set-output name=matrix::$( echo "$json_file" )"
 
   builder:
