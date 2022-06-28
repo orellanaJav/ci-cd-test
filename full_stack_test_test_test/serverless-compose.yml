@@ -1,5 +1,0 @@
-services:
-  test_1:
-    path: services/test_1/core
-  test_2:
-    path: services/test_2/core
