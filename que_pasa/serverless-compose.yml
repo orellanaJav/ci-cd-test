@@ -1,3 +1,0 @@
-services:
-  test_1:
-    path: services/test_1/core
