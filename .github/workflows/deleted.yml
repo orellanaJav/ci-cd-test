@@ -269,6 +269,8 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
+      - name: Install Dependencies
+        run: npm install 
       - name: Remove Lambda
         if: ${{ matrix.lambdas.delete_full_lambda == true }}        
         run: |
@@ -282,10 +284,9 @@ jobs:
           echo "$STAGE"
           echo "$REGION"
           echo ${{ matrix.lambdas.lambda_name }}
-
-          cd ${{ matrix.lambdas.stack_name }}/services/${{ matrix.lambdas.lambda_name }}/core
-          npx serverless remove --stage $STAGE
-          # npx serverless remove ${{ matrix.stacks.stack_name }} --stage $STAGE
+          
+          cd ${{ matrix.lambdas.stack_name }}          
+          npx serverless ${{ matrix.lambdas.lambda_name }}:remove --stage $STAGE
           # npx serverless remove ${{ matrix.stacks.stack_name }} --stage $STAGE
 
   # get-stage-and-region:
