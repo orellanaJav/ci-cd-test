@@ -203,7 +203,7 @@ jobs:
     # if: ${{ needs.track-deleted-files.outputs.stacks_to_remove != '[]' && needs.track-deleted-files.outputs.stacks_to_remove != '' }}
     strategy:
       matrix:
-        stack: ${{ fromJSON(needs.track-deleted.outputs.stacks_to_remove) }}
+        stack: ${{ needs.track-deleted.outputs.stacks_to_remove }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -226,6 +226,5 @@ jobs:
       - name: Remove All Stack
         working-directory: ${{ matrix.stacks_to_remove.stack_name }}
         run: |
-          STAGE="${{ needs.get-stage-and-region.outputs.stage }}"
-          npx serverless remove --stage $STAGE
+          echo "${{ needs.track-deleted.outputs.stacks_to_remove }}"
         # if: ${{ matrix.stacks_to_remove.delete_full_stack == true }}
