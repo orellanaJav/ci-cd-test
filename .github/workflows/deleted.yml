@@ -41,6 +41,7 @@ jobs:
         jq -n '[]' > initial_json.json
         json_file=$(jq . initial_json.json)
         INITIAL_DIRECTORY=$(pwd)
+        git checkout ${{ github.event.before }}
         
         if [ -z "$DIFF" ]; then
           echo "::set-output name=folders::[]"
@@ -53,7 +54,6 @@ jobs:
             stack="$( echo $path | cut -d'/' -f1 -s )"
             lambda="$( echo $path | cut -d'/' -f3 -s )"
             
-            git checkout ${{ github.event.before }}
             cd "$stack"
             initial_files_in_stack=$(git ls-files | wc -l)
             cd $INITIAL_DIRECTORY
@@ -143,8 +143,7 @@ jobs:
         fi
         arr_stored_lambdas="$arr_stored_lambdas]"
         echo "::set-output name=stacks-to-remove::$( echo "$json_file" )"        
-        echo "::set-output name=lambdas-to-remove::$( echo "$arr_stored_lambdas" )"
-        git checkout $GITHUB_SHA
+        echo "::set-output name=lambdas-to-remove::$( echo "$arr_stored_lambdas" )"        
 
   get-stage-and-region:
     name: Get Stage And Region by Branch
@@ -191,6 +190,7 @@ jobs:
           echo "::set-output name=region::$( echo "$REGION" )"
 
   delete-stack:
+    name: Delete Full Stack
     needs: [track-deleted-files, get-stage-and-region]
     if: ${{ needs.track-deleted-files.outputs.stacks-to-remove != '[]' && needs.track-deleted-files.outputs.stacks-to-remove != '' }}
     runs-on: ubuntu-latest
@@ -236,6 +236,7 @@ jobs:
           # npx serverless remove ${{ matrix.stacks.stack_name }} --stage $STAGE
   
   delete-lambda-service:
+    name: Delete Lambda Service
     needs: [delete-stack, track-deleted-files, get-stage-and-region]
     if: ${{ needs.track-deleted-files.outputs.lambdas-to-remove != '[]' && needs.track-deleted-files.outputs.lambdas-to-remove != '' }}
     runs-on: ubuntu-latest
@@ -265,7 +266,7 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
-      - name: Remove Full Stack
+      - name: Remove Lambda
         if: ${{ matrix.lambdas.delete_full_lambda == true }}        
         run: |
           echo ${{ github.event.before }}
