@@ -144,6 +144,7 @@ jobs:
         arr_stored_lambdas="$arr_stored_lambdas]"
         echo "::set-output name=stacks-to-remove::$( echo "$json_file" )"        
         echo "::set-output name=lambdas-to-remove::$( echo "$arr_stored_lambdas" )"
+        git checkout $GITHUB_SHA
 
   get-stage-and-region:
     name: Get Stage And Region by Branch
@@ -235,7 +236,7 @@ jobs:
           # npx serverless remove ${{ matrix.stacks.stack_name }} --stage $STAGE
   
   delete-lambda-service:
-    needs: [track-deleted-files, get-stage-and-region]
+    needs: [delete-stack, track-deleted-files, get-stage-and-region]
     if: ${{ needs.track-deleted-files.outputs.lambdas-to-remove != '[]' && needs.track-deleted-files.outputs.lambdas-to-remove != '' }}
     runs-on: ubuntu-latest
     strategy:
