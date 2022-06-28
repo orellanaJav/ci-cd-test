@@ -30,8 +30,6 @@ jobs:
     - name: Set matrix for delete stacks
       id: set-matrix
       run: |
-        pwd
-        ls -la
         DIFF="${{ steps.diff.outputs.diff }}"
         STACKS="${{ needs.stacks.outputs.listStacks }}"
         COUNT_DELETED_FILES_IN_STACK=0
@@ -201,6 +199,10 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         if: ${{ matrix.stacks.delete_full_stack == true }}
+      - name: Check changed files
+        id: diff
+        run: |
+          git fetch origin ${{ github.event.before }} --depth=1          
       - name: Cache node_modules
         if: ${{ matrix.stacks.delete_full_stack == true }}
         uses: actions/cache@v1
@@ -221,6 +223,7 @@ jobs:
         run: |
           echo ${{ github.event.before }}
           echo $GITHUB_SHA
+          git checkout ${{ github.event.before }}
           pwd
           ls -la
           STAGE="${{ needs.get-stage-and-region.outputs.stage }}"
