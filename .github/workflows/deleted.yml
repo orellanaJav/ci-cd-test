@@ -156,6 +156,7 @@ jobs:
 
         fi
         json_file=$(jq . initial_json.json)
+        echo "$json_file"
         echo "::set-output name=matrix::$( echo "$json_file" )"
 
 
@@ -172,7 +173,7 @@ jobs:
           - ${{fromJson(needs.job1.outputs.matrix)}}
     steps:
     - run: |
-        echo ${{ matrix.cfg }}
+        echo ${{ matrix }}
   
   # get-stage-and-region:
   #   name: Get Stage And Region by Branch
