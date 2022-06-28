@@ -195,7 +195,7 @@ jobs:
       matrix: 
         stacks: 
           - ${{fromJson(needs.track-deleted-files.outputs.stacks-to-remove)}}
-    steps:      
+    steps:
       - uses: actions/checkout@v2
         if: ${{ matrix.stacks.delete_full_stack == true }}
       - name: Cache node_modules
@@ -213,10 +213,12 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
+      - run: |
+          git checkout ${{ github.event.before }}
       - name: Remove Full Stack
         if: ${{ matrix.stacks.delete_full_stack == true }}
         # working-directory: ${{ matrix.stacks.stack_name }}
-        run: |
+        run: |          
           pwd
           ls -la
           STAGE="${{ needs.get-stage-and-region.outputs.stage }}"
