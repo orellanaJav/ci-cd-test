@@ -48,7 +48,7 @@ jobs:
           json_stack="["            
           while read path; do
             # Set $stack to substring before /
-            delete_full_stack="false"
+            delete_full_stack=false
             stack="$( echo $path | cut -d'/' -f1 -s )"
             lambda="$( echo $path | cut -d'/' -f3 -s )"
             
@@ -71,8 +71,8 @@ jobs:
                 COUNT_DELETED_FILES_STACK=$( echo "$DATA_STACK" | jq -r '.files_deleted_in_stack' )
                 COUNT_DELETED_FILES_STACK=$((COUNT_DELETED_FILES_STACK + 1))
                 if [[ "$COUNT_DELETED_FILES_STACK" == "$initial_files_in_stack" ]]; then
-                    delete_full_stack="true"
-                    jq '(.[] | select(.stack_name == "'$stack'")).delete_full_stack = "true"' initial_json.json > tmp_json.json
+                    delete_full_stack=true
+                    jq '(.[] | select(.stack_name == "'$stack'")).delete_full_stack = true' initial_json.json > tmp_json.json
                     json_file=$(jq . tmp_json.json)
                     echo "$json_file" > initial_json.json
                 fi
@@ -80,7 +80,7 @@ jobs:
                 json_file=$(jq . tmp_json.json)
                 echo "$json_file" > initial_json.json
             else
-                jq '.[. | length] |= . + {"stack_name": "'$stack'", "files_deleted_in_stack": "1", "initial_files_in_stack": '$initial_files_in_stack', "delete_full_stack": "false", "lambdas": []}' initial_json.json > tmp_json.json
+                jq '.[. | length] |= . + {"stack_name": "'$stack'", "files_deleted_in_stack": "1", "initial_files_in_stack": '$initial_files_in_stack', "delete_full_stack": false, "lambdas": []}' initial_json.json > tmp_json.json
                 json_file=$(jq . tmp_json.json)
                 echo "$json_file" > initial_json.json
             fi
@@ -98,7 +98,7 @@ jobs:
                 values_lambda=$(jq -c --arg new_key "$COUNT_DELETED_FILES_LAMBDA" '(.[] | select(.stack_name == "'$stack'")).lambdas[] | select(.lambda_name == "'$lambda'").files_deleted |= $new_key' initial_json.json)
                 arr_lambdas="["
                 while read lambda_; do
-                    if [[ ($COUNT_DELETED_FILES_LAMBDA == $initial_files_in_lambda_service) && ($delete_full_stack == "false") ]]; then
+                    if [[ ($COUNT_DELETED_FILES_LAMBDA == $initial_files_in_lambda_service) && ($delete_full_stack == false) ]]; then
                         lambda_=$( echo "$lambda_" | jq -c 'select(.lambda_name == "'$lambda'").delete_full_lambda=true' )
                     fi
                     arr_lambdas="$arr_lambdas$lambda_,"
@@ -133,7 +133,7 @@ jobs:
         fi
         json_file=$(jq -c . initial_json.json)
         arr_stored_lambdas="["
-        stored_lambda_values=$(jq -c '(.[] | select(.delete_full_stack == "false")).lambdas[] | select(.delete_full_lambda == true)' initial_json.json)
+        stored_lambda_values=$(jq -c '(.[] | select(.delete_full_stack == false)).lambdas[] | select(.delete_full_lambda == true)' initial_json.json)
         while read stored_lambda; do    
             arr_stored_lambdas="$arr_stored_lambdas$stored_lambda,"
         done <<< "$stored_lambda_values"
@@ -197,7 +197,7 @@ jobs:
           - ${{fromJson(needs.track-deleted-files.outputs.stacks-to-remove)}}
     steps:      
       - uses: actions/checkout@v2
-        if: ${{ needs.track-deleted-files.outputs.stacks-to-remove.delete_full_stack == 'true' }}
+        if: ${{ matrix.stacks.delete_full_stack == 'true' }}
       - name: Cache node_modules
         uses: actions/cache@v1
         with:
@@ -206,14 +206,14 @@ jobs:
           restore-keys: |
             node-
       - name: Configure AWS Credentials
-        if: ${{ needs.track-deleted-files.outputs.stacks-to-remove.delete_full_stack == 'true' }}
+        if: ${{ matrix.stacks.delete_full_stack == 'true' }}
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
       - name: Remove Full Stack
-        if: ${{ needs.track-deleted-files.outputs.stacks-to-remove.delete_full_stack == 'true' }}
+        if: ${{ matrix.stacks.delete_full_stack == 'true' }}
         working-directory: ${{ matrix.stacks.stack_name }}
         run: |
           STAGE="${{ needs.get-stage-and-region.outputs.stage }}"
