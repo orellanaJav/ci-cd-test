@@ -1,0 +1,260 @@
+name: Test Deploy
+
+on:
+  push:
+    branches-ignore:
+      - '**'
+    # branches:
+    #   - 'crafting'
+    #   - 'dev'
+    #   - 'main'
+    #   - 'release'
+env:
+  DEV_REGION: sa-east-1  
+  RELEASE_REGION: us-east-1
+  PROD_REGION: us-east-1
+
+jobs:
+  get-stage-and-region:
+    name: Get Stage And Region by Branch
+    runs-on: ubuntu-latest
+    outputs:
+      region: ${{ steps.stage-and-region.outputs.region }}
+      stage: ${{ steps.stage-and-region.outputs.stage }}
+    steps:
+      - name: Get Current Branch
+        shell: bash
+        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+        id: extract_current_branch
+
+      - name: Set Region For Dev
+        run: |
+          echo "STAGE=dev" >> $GITHUB_ENV
+          echo "REGION=$DEV_REGION" >> $GITHUB_ENV
+        if: ${{ steps.extract_current_branch.outputs.branch == 'dev' }}
+
+      - name: Set Region For Crafting
+        run: |
+          echo "STAGE=dev" >> $GITHUB_ENV
+          echo "REGION=$DEV_REGION" >> $GITHUB_ENV
+        if: ${{ steps.extract_current_branch.outputs.branch == 'crafting' }}
+
+      - name: Set Region For Release
+        run: |
+          eecho "STAGE=release" >> $GITHUB_ENV
+          echo "REGION=$RELEASE_REGION" >> $GITHUB_ENV
+        if: ${{ steps.extract_current_branch.outputs.branch == 'release' }}
+
+      - name: Set Region For Production
+        run: |
+          echo "STAGE=prod" >> $GITHUB_ENV
+          echo "REGION=$PROD_REGION" >> $GITHUB_ENV
+        if: ${{ steps.extract_current_branch.outputs.branch == 'main' }}
+
+      - name: Get Stage And Region
+        id: stage-and-region
+        run: |
+          STAGE="${{ env.STAGE }}"
+          REGION="${{ env.REGION }}"
+          echo "::set-output name=stage::$( echo "$STAGE" )"
+          echo "::set-output name=region::$( echo "$REGION" )"
+
+  stacks:
+    name: Get Stacks
+    runs-on: ubuntu-latest
+    needs: get-stage-and-region
+    outputs:
+      listStacks: ${{ steps.idStacks.outputs.listStacks }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: sa-east-1
+      - name: Get Current Stacks
+        id: idStacks
+        run: |                    
+          STAGE="${{ needs.get-stage-and-region.outputs.stage }}"
+          REGION="${{ needs.get-stage-and-region.outputs.region }}"          
+          STACKS=$( aws cloudformation list-stacks --region="$REGION" --stack-status-filter CREATE_IN_PROGRESS CREATE_COMPLETE ROLLBACK_IN_PROGRESS ROLLBACK_FAILED ROLLBACK_COMPLETE DELETE_IN_PROGRESS DELETE_FAILED UPDATE_IN_PROGRESS UPDATE_COMPLETE_CLEANUP_IN_PROGRESS UPDATE_COMPLETE UPDATE_ROLLBACK_IN_PROGRESS UPDATE_ROLLBACK_FAILED UPDATE_ROLLBACK_COMPLETE_CLEANUP_IN_PROGRESS UPDATE_ROLLBACK_COMPLETE REVIEW_IN_PROGRESS | jq '.StackSummaries[].StackName')
+          JSON="["
+          while read stack; do
+            JSONline="\"$stack\","
+            if [[ "$JSON" != *"$JSONline"* ]]; then
+              JSON="$JSON$JSONline"
+            fi
+          done <<< "$STACKS"
+          if [[ $JSON == *, ]]; then
+              JSON="${JSON%?}"
+          fi
+          JSON="$JSON]"
+          echo $JSON
+          
+          echo "::set-output name=listStacks::$( echo "$JSON" )"
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      
+  changes:
+    name: Changes
+    runs-on: ubuntu-latest
+    needs: [stacks, get-stage-and-region]
+    outputs:
+      stack: ${{ steps.filter.outputs.stack }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Check changed files
+        id: diff
+        run: |
+          git fetch origin ${{ github.event.before }} --depth=1
+          export DIFF=$( git diff --diff-filter=d --name-only ${{ github.event.before }} $GITHUB_SHA )
+          echo "Diff between ${{ github.event.before }} and $GITHUB_SHA"
+          echo "$DIFF"
+          
+          echo "::set-output name=diff::$( echo "$DIFF" | sed ':a;N;$!ba;s/\n/%0A/g' )"          
+      - name: Set matrix for build
+        id: filter
+        run: |
+          DIFF="${{ steps.diff.outputs.diff }}"
+          STACKS="${{ needs.stacks.outputs.listStacks }}"
+          STAGE="${{ needs.get-stage-and-region.outputs.stage }}"
+          REGION="${{ needs.get-stage-and-region.outputs.region }}"
+          MAKE_FULL_DEPLOY=false          
+
+          if [ -z "$DIFF" ]; then
+            echo "::set-output name=folders::[]"
+          else
+            JSON="["
+            json_stack="["            
+            while read path; do
+              # Set $stack to substring before /
+              stack="$( echo $path | cut -d'/' -f1 -s )"
+              stack_mid_dash="$( echo $stack | tr _ - )"
+              lambda="$( echo $path | cut -d'/' -f3 -s )"
+              lambda_mid_dash="$( echo $lambda | tr _ - )"
+              stack_cloudfront="$stack_mid_dash-$lambda_mid_dash-$STAGE"
+
+
+            # ignore .github folder
+
+            if [[ "$stack" != ".github" && "$lambda" != "" ]]; then
+              if [[ $STACKS != *"$stack_cloudfront"* ]]; then
+                MAKE_FULL_DEPLOY=true
+              fi                            
+
+              if [[ $path == *"requirements"* ]]; then
+                MAKE_FULL_DEPLOY=true
+              fi
+              stack_item="{\"stack_name\":\"$stack\",\"fullDeploy\":\"$MAKE_FULL_DEPLOY\",\"lambda\":\"$lambda\"},"
+                                          
+              if [[ "$json_stack" != *"$stack_item"* ]]; then
+                json_stack="$json_stack$stack_item"
+
+              fi
+            fi
+            done <<< "$DIFF"
+
+            if [[ $json_stack == *, ]]; then
+              json_stack="${json_stack%?}"
+            fi
+            json_stack="$json_stack]"
+            echo $json_stack
+
+            echo "::set-output name=stack::$( echo "$json_stack" )"
+          fi
+  deploy:
+    needs: [get-stage-and-region, changes, stacks]
+    name: Deploy
+    if: ${{ needs.changes.outputs.stack != '[]' && needs.changes.outputs.stack != '' }}
+    strategy:
+      matrix:
+        stack: ${{ fromJSON(needs.changes.outputs.stack) }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Cache node_modules
+        uses: actions/cache@v1
+        with:
+          path: ~/.npm
+          key: node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            node-
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Setup Python
+        uses: actions/setup-python@v3        
+        with:
+          python-version: '3.9'
+
+      - name: Disabled python-requirements plugin
+        if: ${{ matrix.stack.fullDeploy == 'false' }}
+        run: |
+            pwd
+            ls -la
+            cd ${{ matrix.stack.stack_name }}/services/${{ matrix.stack.lambda }}/core
+            pip install pyyaml
+            python3.9 -c """
+            from yaml import dump
+            from yaml import load
+            from yaml import FullLoader
+
+            if __name__ == '__main__':
+                with open('serverless.yml') as file:
+                    resource_data = load(file, Loader=FullLoader)
+                    file.close()                
+                with open('serverless.yml', 'w') as file:
+                    resource_data['plugins'].remove('serverless-python-requirements')
+                    serverless = dump(resource_data, file)        
+                    file.close()                
+            """
+      
+      - name: Install Dependencies
+        run: npm install        
+
+      - name: Deploy All Stack
+        working-directory: ${{ matrix.stack.stack_name }}
+        run: |
+          STAGE="${{ needs.get-stage-and-region.outputs.stage }}"
+          npx serverless deploy --service=${{ matrix.stack.lambda }} --stage $STAGE
+        if: ${{ matrix.stack.fullDeploy == 'true' }}
+      
+      - name: Deploy Only Function
+        working-directory: ${{ matrix.stack.stack_name }}/services/${{ matrix.stack.lambda }}/core
+        run: |
+          STAGE="${{ needs.get-stage-and-region.outputs.stage }}"          
+          npx serverless deploy -f ${{ matrix.stack.lambda }} --stage $STAGE
+
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        if: ${{ matrix.stack.fullDeploy == 'false' }}
+
+  send-slack-message:
+    runs-on: ubuntu-latest
+    needs: ["deploy"]
+    steps:
+      - uses: actions/checkout@v2
+      - name: send a slack message
+        uses: ./.github/actions/slack
+        with:
+          slack_webhook: ${{ secrets.SLACK_WEBHOOK }}
+          message: Despliegue realizado correctamente
+          title: Despliegue
+
+  send-slack-message-error:
+    runs-on: ubuntu-latest
+    needs: ["deploy"]
+    steps:
+      - uses: actions/checkout@v2
+      - name: send a slack message
+        uses: ./.github/actions/slack
+        with:
+          slack_webhook: ${{ secrets.SLACK_WEBHOOK }}
+          message: Despliegue realizado correctamente
