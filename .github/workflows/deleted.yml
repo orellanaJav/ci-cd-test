@@ -4,13 +4,62 @@ on:
   push:
     branches:
       - "crafting"
+env:
+  DEV_REGION: sa-east-1  
+  RELEASE_REGION: us-east-1
+  PROD_REGION: us-east-1
 
 jobs:
+  get-stage-and-region:
+    name: Get Stage And Region by Branch
+    runs-on: ubuntu-latest
+    outputs:
+      region: ${{ steps.stage-and-region.outputs.region }}
+      stage: ${{ steps.stage-and-region.outputs.stage }}
+    steps:
+      - name: Get Current Branch
+        shell: bash
+        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+        id: extract_current_branch
+
+      - name: Set Region For Dev
+        run: |
+          echo "STAGE=dev" >> $GITHUB_ENV
+          echo "REGION=$DEV_REGION" >> $GITHUB_ENV
+        if: ${{ steps.extract_current_branch.outputs.branch == 'dev' }}
+
+      - name: Set Region For Crafting
+        run: |
+          echo "STAGE=dev" >> $GITHUB_ENV
+          echo "REGION=$DEV_REGION" >> $GITHUB_ENV
+        if: ${{ steps.extract_current_branch.outputs.branch == 'crafting' }}
+
+      - name: Set Region For Release
+        run: |
+          eecho "STAGE=release" >> $GITHUB_ENV
+          echo "REGION=$RELEASE_REGION" >> $GITHUB_ENV
+        if: ${{ steps.extract_current_branch.outputs.branch == 'release' }}
+
+      - name: Set Region For Production
+        run: |
+          echo "STAGE=prod" >> $GITHUB_ENV
+          echo "REGION=$PROD_REGION" >> $GITHUB_ENV
+        if: ${{ steps.extract_current_branch.outputs.branch == 'main' }}
+
+      - name: Get Stage And Region
+        id: stage-and-region
+        run: |
+          STAGE="${{ env.STAGE }}"
+          REGION="${{ env.REGION }}"
+          echo "::set-output name=stage::$( echo "$STAGE" )"
+          echo "::set-output name=region::$( echo "$REGION" )"
+
   track-deleted-files:
     name: Changes
     runs-on: ubuntu-latest    
     outputs:
-      stack: ${{ steps.filter.outputs.stack }}
+      stacks_to_remove: ${{ steps.filter.outputs.stack }}
+      lambdas_to_remove: ${{ steps.filter.outputs.stack }}
     steps:
       - uses: actions/checkout@v2
       - name: Check changed files
@@ -128,7 +177,6 @@ jobs:
 
             done <<< "$DIFF"
 
-            echo $(jq . initial_json.json)  | jq
             arr_stored_lambdas="["
             stored_lambda_values=$(jq -c '(.[] | select(.delete_full_stack == false)).lambdas[] | select(.delete_full_lambda == true)' initial_json.json)
             while read stored_lambda; do    
@@ -138,7 +186,46 @@ jobs:
                 arr_stored_lambdas=$( echo "${arr_stored_lambdas::-1}" )
             fi
             arr_stored_lambdas="$arr_stored_lambdas]"
-            echo "$arr_stored_lambdas"
-
             
+            echo $(jq . initial_json.json)  | jq
+            echo "$arr_stored_lambdas"
+            
+            json_file=$(jq . initial_json.json)
+            echo "::set-output name=stacks_to_remove::$( echo "$json_file" )"
+            echo "::set-output name=lambdas_to_remove::$( echo "$arr_stored_lambdas" )"
+
           fi
+
+
+  stacks_to_remove:
+    needs: [track-deleted-files, get-stage-and-region]
+    name: Stacks To Remove
+    if: ${{ needs.track-deleted-files.outputs.stacks_to_remove != '[]' && needs.track-deleted-files.outputs.stacks_to_remove != '' }}
+    strategy:
+      matrix:
+        stack: ${{ fromJSON(needs.track-deleted.outputs.stacks_to_remove) }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Cache node_modules
+        if: ${{ matrix.stacks_to_remove.delete_full_stack == true }}
+        uses: actions/cache@v1
+        with:
+          path: ~/.npm
+          key: node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            node-
+      - name: Configure AWS Credentials
+        if: ${{ matrix.stacks_to_remove.delete_full_stack == true }}
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+      
+      - name: Remove All Stack
+        working-directory: ${{ matrix.stacks_to_remove.stack_name }}
+        run: |
+          STAGE="${{ needs.get-stage-and-region.outputs.stage }}"
+          npx serverless remove --stage $STAGE
+        if: ${{ matrix.stacks_to_remove.delete_full_stack == true }}
