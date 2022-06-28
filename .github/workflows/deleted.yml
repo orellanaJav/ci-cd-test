@@ -29,19 +29,16 @@ jobs:
           STACKS="${{ needs.stacks.outputs.listStacks }}"
           STAGE="${{ needs.get-stage-and-region.outputs.stage }}"
           REGION="${{ needs.get-stage-and-region.outputs.region }}"
-          MAKE_FULL_DEPLOY=false
-          STACK_NAME="hola mundo"
+                    
           COUNT_DELETED_FILES_IN_STACK=0
           COUNT_DELETED_FILES_IN_SERVICE=0
+          lambas_to_remove_completely="["
           
           # Genera el archivo inicial que contendra la cantidad de archivos
           # eliminados por stack y servicios lambda.
           jq -n '[]' > initial_json.json
           json_file=$(jq . initial_json.json)
           INITIAL_DIRECTORY=$(pwd)
-
-
-
          
           if [ -z "$DIFF" ]; then
             echo "::set-output name=folders::[]"
@@ -98,6 +95,7 @@ jobs:
                   while read lambda_; do
                       if [[ $COUNT_DELETED_FILES_LAMBDA == $initial_files_in_lambda_service ]]; then
                           lambda_=$( echo "$lambda_" | jq -c 'select(.lambda_name == "'$lambda'").delete_full_lambda="true"' )
+                          lambas_to_remove_completely="$lambas_to_remove_completely$lambda_,"
                       fi
                       arr_lambdas="$arr_lambdas$lambda_,"
                   done <<< "$values_lambda"
@@ -111,7 +109,7 @@ jobs:
                   echo "$json_file" > initial_json.json
 
               elif [[ "$lambda" ]]; then
-                  arr_lambdas='[{"lambda_name":"'$lambda'","files_deleted":"1","delete_full_lambda":"false","initial_files_in_lambda_service":'$initial_files_in_lambda_service'}'
+                  arr_lambdas='[{"lambda_name":"'$lambda'","files_deleted":"1","delete_full_lambda":"false","initial_files_in_lambda_service":'$initial_files_in_lambda_service',"stack_name":"'$stack'"}'
                   values_lambda=$(jq -c '(.[] | select(.stack_name == "'$stack'")).lambdas[]' initial_json.json)        
                   while read lambda; do
                       arr_lambdas="$arr_lambdas,$lambda"
@@ -129,5 +127,10 @@ jobs:
             done <<< "$DIFF"
 
             echo $(jq . initial_json.json)  | jq
+            if [[ $lambas_to_remove_completely == *, ]]; then
+                lambas_to_remove_completely="${lambas_to_remove_completely::-1}"
+            fi
+                lambas_to_remove_completely="$lambas_to_remove_completely]"
+            echo "$lambas_to_remove_completely" |jq
             
           fi
