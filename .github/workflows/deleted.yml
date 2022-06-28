@@ -58,7 +58,7 @@ jobs:
     name: Changes
     runs-on: ubuntu-latest    
     outputs:
-      stacks_to_remove: ${{ steps.diff.outputs.stacks_to_remove }}
+      stacks_to_remove: ${{ steps.filter.outputs.stacks_to_remove }}
       # lambdas_to_remove: ${{ steps.diff.outputs.lambdas_to_remove }}
     steps:
       - uses: actions/checkout@v2
