@@ -1,4 +1,3 @@
-from settings.config import logger
 
 __version__ = '0.1.0'
 
@@ -25,5 +24,4 @@ def lambda_handler(event: dict, context: dict) -> dict:
     :Created:
         - 2022.06.28
     """
-    logger.basic_loader(**event)
     return {'status': 'status'}
