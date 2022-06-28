@@ -215,14 +215,16 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
       - name: Remove Full Stack
         if: ${{ matrix.stacks.delete_full_stack == true }}
-        working-directory: ${{ matrix.stacks.stack_name }}
+        # working-directory: ${{ matrix.stacks.stack_name }}
         run: |
+          pwd
+          ls -la
           STAGE="${{ needs.get-stage-and-region.outputs.stage }}"
           REGION="${{ needs.get-stage-and-region.outputs.region }}"
           echo "$STAGE"
           echo "$REGION"
           echo ${{ matrix.stacks.stack_name }}
-          npx serverless remove ${{ matrix.stacks.stack_name }} --stage $STAGE
+          # npx serverless remove ${{ matrix.stacks.stack_name }} --stage $STAGE
   
   # get-stage-and-region:
   #   name: Get Stage And Region by Branch
