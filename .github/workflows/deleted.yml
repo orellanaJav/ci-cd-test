@@ -194,13 +194,31 @@ jobs:
       matrix: 
         stacks: 
           - ${{fromJson(needs.track-deleted-files.outputs.stacks-to-remove)}}
-    steps:
-    - run: |
-        STAGE="${{ needs.get-stage-and-region.outputs.stage }}"
-        REGION="${{ needs.get-stage-and-region.outputs.region }}"
-        echo "$STAGE"
-        echo "$REGION"
-        echo ${{ matrix.stacks.stack_name }}
+    steps:      
+      - uses: actions/checkout@v2
+      - name: Cache node_modules
+        uses: actions/cache@v1
+        with:
+          path: ~/.npm
+          key: node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            node-
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+      - name: Configure AWS Credentials
+        if: ${{ needs.track-deleted-files.outputs.stacks-to-remove.delete_full_stack == true }}
+        working-directory: ${{ matrix.stacks.stack_name }}
+        run: |
+          STAGE="${{ needs.get-stage-and-region.outputs.stage }}"
+          REGION="${{ needs.get-stage-and-region.outputs.region }}"
+          echo "$STAGE"
+          echo "$REGION"
+          echo ${{ matrix.stacks.stack_name }}
+          npx serverless remove ${{ matrix.stacks.stack_name }} --stage $STAGE
   
   # get-stage-and-region:
   #   name: Get Stage And Region by Branch
