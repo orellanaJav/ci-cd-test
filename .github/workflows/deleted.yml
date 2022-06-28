@@ -142,6 +142,7 @@ jobs:
         fi
         arr_stored_lambdas="$arr_stored_lambdas]"
         echo "::set-output name=stacks-to-remove::$( echo "$json_file" )"
+        git checkout $GITHUB_SHA
 
   get-stage-and-region:
     name: Get Stage And Region by Branch
