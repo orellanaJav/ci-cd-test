@@ -15,6 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       stacks-to-remove: ${{ steps.set-matrix.outputs.stacks-to-remove }}
+      lambdas-to-remove: ${{ steps.set-matrix.outputs.lambdas-to-remove }}
       # matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
     - uses: actions/checkout@v2
@@ -141,8 +142,8 @@ jobs:
             arr_stored_lambdas=$( echo "${arr_stored_lambdas::-1}" )
         fi
         arr_stored_lambdas="$arr_stored_lambdas]"
-        echo "::set-output name=stacks-to-remove::$( echo "$json_file" )"
-        git checkout $GITHUB_SHA
+        echo "::set-output name=stacks-to-remove::$( echo "$json_file" )"        
+        echo "::set-output name=lambdas-to-remove::$( echo "$arr_stored_lambdas" )"
 
   get-stage-and-region:
     name: Get Stage And Region by Branch
@@ -233,6 +234,51 @@ jobs:
           echo ${{ matrix.stacks.stack_name }}
           # npx serverless remove ${{ matrix.stacks.stack_name }} --stage $STAGE
   
+  delete-lambda-service:
+    needs: [track-deleted-files, get-stage-and-region]
+    if: ${{ needs.track-deleted-files.outputs.lambdas-to-remove != '[]' && needs.track-deleted-files.outputs.lambdas-to-remove != '' }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix: 
+        lambdas: 
+          - ${{fromJson(needs.track-deleted-files.outputs.lambdas-to-remove)}}
+    steps:
+      - uses: actions/checkout@v2
+        if: ${{ matrix.lambdas.delete_full_lambda == true }}
+      - name: Check changed files
+        id: diff
+        run: |
+          git fetch origin ${{ github.event.before }} --depth=1          
+      - name: Cache node_modules
+        if: ${{ matrix.lambdas.delete_full_lambda == true }}
+        uses: actions/cache@v1
+        with:
+          path: ~/.npm
+          key: node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            node-
+      - name: Configure AWS Credentials
+        if: ${{ matrix.lambdas.delete_full_lambda == true }}
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+      - name: Remove Full Stack
+        if: ${{ matrix.lambdas.delete_full_lambda == true }}        
+        run: |
+          echo ${{ github.event.before }}
+          echo $GITHUB_SHA
+          git checkout ${{ github.event.before }}
+          pwd
+          ls -la
+          STAGE="${{ needs.get-stage-and-region.outputs.stage }}"
+          REGION="${{ needs.get-stage-and-region.outputs.region }}"
+          echo "$STAGE"
+          echo "$REGION"
+          echo ${{ matrix.lambdas.lambda_name }}
+          # npx serverless remove ${{ matrix.stacks.stack_name }} --stage $STAGE
+
   # get-stage-and-region:
   #   name: Get Stage And Region by Branch
   #   runs-on: ubuntu-latest
