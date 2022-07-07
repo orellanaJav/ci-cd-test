@@ -285,7 +285,8 @@ jobs:
           echo ${{ matrix.lambdas.lambda_name }}
           
           cd ${{ matrix.lambdas.stack_name }}          
-          npx serverless ${{ matrix.lambdas.lambda_name }}:remove --stage $STAGE
+          npx serverless deploy --stage $STAGE
+          # npx serverless ${{ matrix.lambdas.lambda_name }}:remove --stage $STAGE
           # npx serverless remove ${{ matrix.stacks.stack_name }} --stage $STAGE
 
   # get-stage-and-region:

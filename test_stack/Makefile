@@ -33,7 +33,7 @@ SHELL=/bin/bash
 invoke_local: create_venv install_requirements create_layers_cache install_layers test_invoke_local
 invoke_remote: test_invoke_remote
 remove_stack: remove
-remove_lambda: remove update_serverless_compose
+remove_lambda: remove update_serverless_file
 
 create_venv:
 	@echo -e ${HEADER}"-----------------------------------------"${END};
@@ -137,11 +137,10 @@ test_invoke_remote:
 	else \
 		TEST_FILE="${DEFAULT_TEST_FILE}"; \
 	fi
-	@+cd ${PROJECT}\
-		 && serverless invoke \
-		 --function ${LAMBDA} \
-		 --path setup/${STAGE}/test/$$TEST_FILE.json \
-		 --stage ${STAGE}
+	@serverless invoke \
+		--function ${LAMBDA} \
+		--path ${PROJECT}/setup/${STAGE}/test/$$TEST_FILE.json \
+		--stage ${STAGE}
 	@echo -e ${HEADER}"-----------------------------------------"${END};
 	@echo -e ${HEADER}"PRUEBA REMOTA FINALIZADA PARA EL STAGE ${STAGE}"${END};	
 	@echo -e ${HEADER}"-----------------------------------------"${END};
@@ -171,14 +170,21 @@ remove:
 		;;  \
     esac
 
-update_serverless_compose:
+update_serverless_file:	
 	@if test ! -d "services/${LAMBDA}"; then \
 		${RUNTIME} -c 'import yaml;\
-					f=open("serverless-compose.yml");\
+					f=open("serverless.yml");\
 					y=yaml.load(f, Loader=yaml.FullLoader);\
-					y["services"].pop("${LAMBDA}", None);\
-					fu=open("serverless-compose.yml", "w");\
-					yaml.dump(y, fu)'
+					actual_functions=y["functions"];\
+					actual_cmd_removed_arctifacts=y["custom"]["scriptHooks"]["before:package:createDeploymentArtifacts"];\
+					lambda_to_delete="file(services/${LAMBDA}/event.yml)";\
+					cmd_to_delete="services/${LAMBDA}/core";\
+					cleaned_cmd_removed_arctifacts=[ x for x in actual_cmd_removed_arctifacts if cmd_to_delete not in x ];\
+					cleaned_functions=[ x for x in actual_functions if lambda_to_delete not in x ];\
+					y["custom"]["scriptHooks"]["before:package:createDeploymentArtifacts"]=cleaned_cmd_removed_arctifacts;\
+					y["functions"]=cleaned_functions;\
+					fu=open("serverless.yml", "w");\
+					yaml.dump(y, fu);'
 		echo -e ${HEADER}"-----------------------------------------"${END};
 		echo -e ${OKGREEN}"[OK] LAMBDA ELIMINADO CORRECTAMENTE "${END};
 		echo -e ${HEADER}"-----------------------------------------"${END};
@@ -219,4 +225,3 @@ test_invoke_local:
 	@echo -e ${HEADER}"-----------------------------------------"${END};
 	@echo -e ${HEADER}"PRUEBA LOCAL FINALIZADA PARA EL STAGE ${STAGE}"${END};
 	@echo -e ${HEADER}"-----------------------------------------"${END};
-
