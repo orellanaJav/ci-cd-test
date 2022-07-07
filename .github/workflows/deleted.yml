@@ -225,6 +225,7 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
       - name: Install Dependencies
         run: |
+          pwd
           ls -la
           npm install
       - name: Setup Python
