@@ -24,5 +24,5 @@ def lambda_handler(event: dict, context: dict) -> dict:
 
     :Created:
         - 2022.07.07
-    """    
+    """
     return {'status': 'status'}
