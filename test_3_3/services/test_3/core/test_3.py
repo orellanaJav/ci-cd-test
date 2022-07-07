@@ -27,4 +27,6 @@ def lambda_handler(event: dict, context: dict) -> dict:
     """
     logger.basic_loader(**event)
     print('ok')
+    print('ok')
+    print('ok')
     return {'status': 'status'}
