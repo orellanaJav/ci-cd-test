@@ -204,10 +204,10 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         if: ${{ matrix.stacks.delete_full_stack == true }}
-      - name: Fetch Event Before
-        if: ${{ matrix.stacks.delete_full_stack == true }}
-        run: |
-          git fetch origin ${{ github.event.before }} --depth=1          
+      # - name: Fetch Event Before
+      #   if: ${{ matrix.stacks.delete_full_stack == true }}
+      #   run: |
+      #     git fetch origin ${{ github.event.before }} --depth=1          
       - name: Cache node_modules
         if: ${{ matrix.stacks.delete_full_stack == true }}
         uses: actions/cache@v1
