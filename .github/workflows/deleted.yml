@@ -278,7 +278,9 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
       - name: Install Dependencies
-        run: npm install
+        run: |
+          la -la
+          npm install
       - name: Setup Python
         uses: actions/setup-python@v3        
         with:
