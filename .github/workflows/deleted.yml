@@ -243,8 +243,8 @@ jobs:
     if: ${{ needs.track-deleted-files.outputs.lambdas-to-remove != '[]' && needs.track-deleted-files.outputs.lambdas-to-remove != '' }}
     runs-on: ubuntu-latest
     strategy:
-      matrix: 
-        lambdas: 
+      matrix:
+        lambdas:
           - ${{fromJson(needs.track-deleted-files.outputs.lambdas-to-remove)}}
     steps:
       - uses: actions/checkout@v2

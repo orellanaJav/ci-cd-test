@@ -134,7 +134,7 @@ jobs:
               stack_mid_dash="$( echo $stack | tr _ - )"
               lambda="$( echo $path | cut -d'/' -f3 -s )"
               lambda_mid_dash="$( echo $lambda | tr _ - )"
-              stack_cloudfront="$stack_mid_dash-$lambda_mid_dash-$STAGE"
+              stack_cloudfront="$stack_mid_dash-$STAGE"
 
 
             # ignore .github folder
@@ -222,11 +222,11 @@ jobs:
         working-directory: ${{ matrix.stack.stack_name }}
         run: |
           STAGE="${{ needs.get-stage-and-region.outputs.stage }}"
-          npx serverless deploy --service=${{ matrix.stack.lambda }} --stage $STAGE
+          npx serverless deploy --stage $STAGE
         if: ${{ matrix.stack.fullDeploy == 'true' }}
       
       - name: Deploy Only Function
-        working-directory: ${{ matrix.stack.stack_name }}/services/${{ matrix.stack.lambda }}/core
+        working-directory: ${{ matrix.stack.stack_name }}
         run: |
           STAGE="${{ needs.get-stage-and-region.outputs.stage }}"          
           npx serverless deploy -f ${{ matrix.stack.lambda }} --stage $STAGE
