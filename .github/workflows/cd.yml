@@ -132,12 +132,12 @@ jobs:
               # Set $stack to substring before /
               stack="$( echo $path | cut -d'/' -f1 -s )"
               stack_mid_dash="$( echo $stack | tr _ - )"
-              lambda="$( echo $path | cut -d'/' -f3 -s )"
-              lambda_mid_dash="$( echo $lambda | tr _ - )"
               stack_cloudfront="$stack_mid_dash-$STAGE"
 
-
-            # ignore .github folder
+            if [[ "services" != *"$path"* ]]; then
+              lambda="$( echo $path | cut -d'/' -f3 -s )"
+              lambda_mid_dash="$( echo $lambda | tr _ - )"
+            fi            
 
             if [[ "$stack" != ".github" && "$lambda" != "" ]]; then
               if [[ $STACKS != *"$stack_cloudfront"* ]]; then
@@ -149,10 +149,15 @@ jobs:
               fi
 
               stack_item="{\"stack_name\":\"$stack\",\"fullDeploy\":\"$MAKE_FULL_DEPLOY\",\"lambda\":\"$lambda\"},"
-                                          
-              if [[ "$json_stack" != *"$stack_item"* ]]; then
-                json_stack="$json_stack$stack_item"
 
+              if [[ "$MAKE_FULL_DEPLOY" == "true" ]]; then
+                if [[ "$stack" != *"$json_stack"* ]]; then
+                  json_stack="$json_stack$stack_item"
+                fi
+              else
+                if [[ "$json_stack" != *"$stack_item"* ]]; then
+                  json_stack="$json_stack$stack_item"
+                fi
               fi
             fi
             done <<< "$DIFF"
