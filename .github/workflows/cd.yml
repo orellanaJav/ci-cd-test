@@ -123,14 +123,16 @@ jobs:
           REGION="${{ needs.get-stage-and-region.outputs.region }}"
           MAKE_FULL_DEPLOY=false
           STACK_FULL_DEPLOY=""
+          echo "$DIFF"
 
           if [ -z "$DIFF" ]; then
             echo "::set-output name=folders::[]"
           else
             JSON="["
             json_stack="["            
-            while read path; do
-              # Set $stack to substring before /
+            while read path; do              
+              lambda=""
+              lambda_mid_dash=""
               stack="$( echo $path | cut -d'/' -f1 -s )"
               stack_mid_dash="$( echo $stack | tr _ - )"
               stack_cloudfront="$stack_mid_dash-$STAGE"
