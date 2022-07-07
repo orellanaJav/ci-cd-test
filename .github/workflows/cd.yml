@@ -166,7 +166,6 @@ jobs:
                   json_stack="$json_stack$stack_item"
                 fi
               fi
-
             fi
             done <<< "$DIFF"
 
@@ -203,32 +202,32 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Setup Python
-        uses: actions/setup-python@v3        
-        with:
-          python-version: '3.9'
+      # - name: Setup Python
+      #   uses: actions/setup-python@v3        
+      #   with:
+      #     python-version: '3.9'
 
-      - name: Disabled python-requirements plugin
-        if: ${{ matrix.stack.fullDeploy == 'false' }}
-        run: |
-            pwd
-            ls -la
-            cd ${{ matrix.stack.stack_name }}/services/${{ matrix.stack.lambda }}/core
-            pip install pyyaml
-            python3.9 -c """
-            from yaml import dump
-            from yaml import load
-            from yaml import FullLoader
+      # - name: Disabled python-requirements plugin
+      #   if: ${{ matrix.stack.fullDeploy == 'false' }}
+      #   run: |
+      #       pwd
+      #       ls -la
+      #       cd ${{ matrix.stack.stack_name }}/services/${{ matrix.stack.lambda }}/core
+      #       pip install pyyaml
+      #       python3.9 -c """
+      #       from yaml import dump
+      #       from yaml import load
+      #       from yaml import FullLoader
 
-            if __name__ == '__main__':
-                with open('serverless.yml') as file:
-                    resource_data = load(file, Loader=FullLoader)
-                    file.close()                
-                with open('serverless.yml', 'w') as file:
-                    resource_data['plugins'].remove('serverless-python-requirements')
-                    serverless = dump(resource_data, file)        
-                    file.close()                
-            """
+      #       if __name__ == '__main__':
+      #           with open('serverless.yml') as file:
+      #               resource_data = load(file, Loader=FullLoader)
+      #               file.close()                
+      #           with open('serverless.yml', 'w') as file:
+      #               resource_data['plugins'].remove('serverless-python-requirements')
+      #               serverless = dump(resource_data, file)        
+      #               file.close()                
+      #       """
       
       - name: Install Dependencies
         run: npm install        
@@ -244,7 +243,7 @@ jobs:
         working-directory: ${{ matrix.stack.stack_name }}
         run: |
           STAGE="${{ needs.get-stage-and-region.outputs.stage }}"          
-          npx serverless deploy -f ${{ matrix.stack.lambda }} --stage $STAGE
+          npx serverless deploy function -f ${{ matrix.stack.lambda }} --stage $STAGE
 
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
