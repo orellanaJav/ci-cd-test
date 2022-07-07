@@ -135,7 +135,7 @@ jobs:
               stack_mid_dash="$( echo $stack | tr _ - )"
               stack_cloudfront="$stack_mid_dash-$STAGE"
 
-            if [[ "services" != *"$path"* ]]; then
+            if [[ "$path" != *"services"* ]]; then
               lambda="$( echo $path | cut -d'/' -f3 -s )"
               lambda_mid_dash="$( echo $lambda | tr _ - )"
             fi
