@@ -227,6 +227,9 @@ jobs:
         run: |
           pwd
           ls -la
+          cd ..
+          pwd
+          ls -la
           npm install
       - name: Setup Python
         uses: actions/setup-python@v3        
