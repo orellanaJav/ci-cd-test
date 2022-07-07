@@ -153,14 +153,17 @@ jobs:
               
 
               stack_item="{\"stack_name\":\"$stack\",\"fullDeploy\":\"$MAKE_FULL_DEPLOY\",\"lambda\":\"$lambda\"},"
-                                          
-              if [[ "$json_stack" != *"$stack_item"* ]]; then
-                json_stack="$json_stack$stack_item"
-              fi
 
               if [[ $MAKE_FULL_DEPLOY == 'true' ]]; then
                 if [[ "$STACK_FULL_DEPLOY" != *"$stack"* ]]; then
+                  if [[ "$json_stack" != *"$stack_item"* ]]; then
+                    json_stack="$json_stack$stack_item"
+                  fi
                   STACK_FULL_DEPLOY="$STACK_FULL_DEPLOY$stack,"
+                fi
+              else
+                if [[ "$json_stack" != *"$stack_item"* ]]; then
+                  json_stack="$json_stack$stack_item"
                 fi
               fi
 
