@@ -121,7 +121,7 @@ jobs:
           STACKS="${{ needs.stacks.outputs.listStacks }}"
           STAGE="${{ needs.get-stage-and-region.outputs.stage }}"
           REGION="${{ needs.get-stage-and-region.outputs.region }}"
-          MAKE_FULL_DEPLOY=false          
+          MAKE_FULL_DEPLOY=false
 
           if [ -z "$DIFF" ]; then
             echo "::set-output name=folders::[]"
@@ -142,11 +142,12 @@ jobs:
             if [[ "$stack" != ".github" && "$lambda" != "" ]]; then
               if [[ $STACKS != *"$stack_cloudfront"* ]]; then
                 MAKE_FULL_DEPLOY=true
-              fi                            
+              fi
 
               if [[ $path == *"requirements"* ]]; then
                 MAKE_FULL_DEPLOY=true
               fi
+
               stack_item="{\"stack_name\":\"$stack\",\"fullDeploy\":\"$MAKE_FULL_DEPLOY\",\"lambda\":\"$lambda\"},"
                                           
               if [[ "$json_stack" != *"$stack_item"* ]]; then
