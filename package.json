@@ -1,12 +1,12 @@
 {
   "devDependencies": {
-    "@serverless/compose": "^1.2.0",
     "serverless-deployment-bucket": "^1.6.0",
-    "serverless-python-requirements": "^5.4.0"
+    "serverless-python-requirements": "git+https://github.com/orellanaJav/serverless-python-requirements.git#fix/deploy-function-with-requirements",
+    "serverless-scriptable-plugin": "^1.2.2"
   },
   "dependencies": {
-    "@serverless/compose": "^1.2.0",
     "serverless-deployment-bucket": "^1.6.0",
-    "serverless-python-requirements": "^5.4.0"
+    "serverless-python-requirements": "git+https://github.com/orellanaJav/serverless-python-requirements.git#fix/deploy-function-with-requirements",
+    "serverless-scriptable-plugin": "^1.2.2"
   }
 }

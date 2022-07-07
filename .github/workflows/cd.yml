@@ -150,15 +150,21 @@ jobs:
                 MAKE_FULL_DEPLOY=true
               fi
               
-              if [[ $MAKE_FULL_DEPLOY == 'true' ]]; then
-                echo "HOLA <---> "
-              fi
 
               stack_item="{\"stack_name\":\"$stack\",\"fullDeploy\":\"$MAKE_FULL_DEPLOY\",\"lambda\":\"$lambda\"},"
                                           
               if [[ "$json_stack" != *"$stack_item"* ]]; then
                 json_stack="$json_stack$stack_item"
               fi
+
+              if [[ $MAKE_FULL_DEPLOY == 'true' ]]; then
+                echo "HOLA <---> "
+                echo "$json_stack"
+                if [[ "$json_stack" != *"$stack"* ]]; then
+                  echo "Ya se encuentra en el stack"
+                fi
+              fi
+
             fi
             done <<< "$DIFF"
 
