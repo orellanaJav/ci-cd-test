@@ -122,6 +122,7 @@ jobs:
           STAGE="${{ needs.get-stage-and-region.outputs.stage }}"
           REGION="${{ needs.get-stage-and-region.outputs.region }}"
           MAKE_FULL_DEPLOY=false
+          STACK_FULL_DEPLOY=""
 
           if [ -z "$DIFF" ]; then
             echo "::set-output name=folders::[]"
@@ -158,10 +159,8 @@ jobs:
               fi
 
               if [[ $MAKE_FULL_DEPLOY == 'true' ]]; then
-                echo "HOLA <---> "
-                echo "$json_stack"
-                if [[ "$json_stack" != *"$stack"* ]]; then
-                  echo "Ya se encuentra en el stack"
+                if [[ "$STACK_FULL_DEPLOY" != *"$stack"* ]]; then
+                  STACK_FULL_DEPLOY="$STACK_FULL_DEPLOY,"
                 fi
               fi
 
@@ -173,6 +172,7 @@ jobs:
             fi
             json_stack="$json_stack]"
             echo $json_stack
+            echo $STACK_FULL_DEPLOY
 
             echo "::set-output name=stack::$( echo "$json_stack" )"
           fi
