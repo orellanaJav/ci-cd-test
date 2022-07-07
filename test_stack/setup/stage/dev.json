@@ -1,3 +1,4 @@
 {
-    "REGION": "sa-east-1"
+    "REGION": "sa-east-1",
+    "hola": "holi"
 }
