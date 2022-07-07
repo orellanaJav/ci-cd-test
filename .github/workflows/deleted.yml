@@ -40,8 +40,8 @@ jobs:
         # eliminados por stack y servicios lambda.
         jq -n '[]' > initial_json.json
         json_file=$(jq . initial_json.json)
-        INITIAL_DIRECTORY=$(pwd)
         git checkout ${{ github.event.before }}
+        INITIAL_DIRECTORY=$(pwd)
         
         if [ -z "$DIFF" ]; then
           echo "::set-output name=folders::[]"
