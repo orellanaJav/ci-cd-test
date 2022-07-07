@@ -202,10 +202,10 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      # - name: Setup Python
-      #   uses: actions/setup-python@v3        
-      #   with:
-      #     python-version: '3.9'
+      - name: Setup Python
+        uses: actions/setup-python@v3        
+        with:
+          python-version: '3.9'
 
       # - name: Disabled python-requirements plugin
       #   if: ${{ matrix.stack.fullDeploy == 'false' }}
