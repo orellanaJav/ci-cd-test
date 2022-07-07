@@ -204,10 +204,10 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         if: ${{ matrix.stacks.delete_full_stack == true }}
-      # - name: Fetch Event Before
-      #   if: ${{ matrix.stacks.delete_full_stack == true }}
-      #   run: |
-      #     git fetch origin ${{ github.event.before }} --depth=1          
+      - name: Fetch Event Before
+        if: ${{ matrix.stacks.delete_full_stack == true }}
+        run: |
+          git fetch origin ${{ github.event.before }} --depth=1          
       - name: Cache node_modules
         if: ${{ matrix.stacks.delete_full_stack == true }}
         uses: actions/cache@v1
@@ -227,9 +227,6 @@ jobs:
         run: |
           pwd
           ls -la
-          cd ..
-          pwd
-          ls -la
           npm install
       - name: Setup Python
         uses: actions/setup-python@v3        
@@ -241,9 +238,6 @@ jobs:
           echo ${{ github.event.before }}
           echo $GITHUB_SHA
           git checkout ${{ github.event.before }}
-          pwd
-          ls -la
-          cd ..
           pwd
           ls -la
           STAGE="${{ needs.get-stage-and-region.outputs.stage }}"
