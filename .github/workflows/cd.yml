@@ -137,7 +137,9 @@ jobs:
             if [[ "services" != *"$path"* ]]; then
               lambda="$( echo $path | cut -d'/' -f3 -s )"
               lambda_mid_dash="$( echo $lambda | tr _ - )"
-            fi            
+            fi
+
+            # ignore .github folder
 
             if [[ "$stack" != ".github" && "$lambda" != "" ]]; then
               if [[ $STACKS != *"$stack_cloudfront"* ]]; then
@@ -147,17 +149,15 @@ jobs:
               if [[ $path == *"requirements"* ]]; then
                 MAKE_FULL_DEPLOY=true
               fi
+              
+              if [[ $MAKE_FULL_DEPLOY == 'true' ]]; then
+                echo "HOLA <---> "
+              fi
 
               stack_item="{\"stack_name\":\"$stack\",\"fullDeploy\":\"$MAKE_FULL_DEPLOY\",\"lambda\":\"$lambda\"},"
-
-              if [[ "$MAKE_FULL_DEPLOY" == "true" ]]; then
-                if [[ "$stack" != *"$json_stack"* ]]; then
-                  json_stack="$json_stack$stack_item"
-                fi
-              else
-                if [[ "$json_stack" != *"$stack_item"* ]]; then
-                  json_stack="$json_stack$stack_item"
-                fi
+                                          
+              if [[ "$json_stack" != *"$stack_item"* ]]; then
+                json_stack="$json_stack$stack_item"
               fi
             fi
             done <<< "$DIFF"
