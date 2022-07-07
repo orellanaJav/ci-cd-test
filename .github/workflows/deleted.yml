@@ -228,10 +228,12 @@ jobs:
           pwd
           ls -la
           npm install
+        if: ${{ matrix.stacks.delete_full_stack == true }}
       - name: Setup Python
         uses: actions/setup-python@v3        
         with:
           python-version: '3.9'
+        if: ${{ matrix.stacks.delete_full_stack == true }}
       - name: Remove Full Stack
         if: ${{ matrix.stacks.delete_full_stack == true }}        
         run: |
@@ -282,10 +284,12 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
       - name: Install Dependencies
         run: npm install
+        if: ${{ matrix.lambdas.delete_full_lambda == true }}
       - name: Setup Python
         uses: actions/setup-python@v3        
         with:
           python-version: '3.9'
+        if: ${{ matrix.lambdas.delete_full_lambda == true }}
       - name: Remove Lambda
         if: ${{ matrix.lambdas.delete_full_lambda == true }}        
         run: |
