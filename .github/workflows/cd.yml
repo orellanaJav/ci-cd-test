@@ -261,18 +261,18 @@ jobs:
         env:
           SLACK_COLOR: ${{ job.status }}
           SLACK_TITLE: Resultado
-          SLACK_MESSAGE: No se ha podido desplegar el ** ${{ join(steps.deploy-all-stack.outputs.*) || join(steps.deploy-only-function.outputs.*) }} **
+          SLACK_MESSAGE: Se ha desplegado correctamente el **${{ join(steps.deploy-all-stack.outputs.*) || join(steps.deploy-only-function.outputs.*) }}**
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_FOOTER: 'Tech'
+      
       - name: Send Error Deploy Slack Message
-
         continue-on-error: true
         if: failure()
         uses: rtCamp/action-slack-notify@v2
         env:
           SLACK_COLOR: ${{ job.status }}
           SLACK_TITLE: Resultado
-          SLACK_MESSAGE: Se ha desplegado correctamente el ** ${{ join(steps.deploy-all-stack.outputs.*) || join(steps.deploy-only-function.outputs.*) }} **
+          SLACK_MESSAGE: No se ha podido desplegar el **${{ join(steps.deploy-all-stack.outputs.*) || join(steps.deploy-only-function.outputs.*) }}**
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_FOOTER: 'Tech'
   
