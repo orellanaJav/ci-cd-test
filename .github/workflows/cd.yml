@@ -238,6 +238,7 @@ jobs:
         run: npm install        
 
       - name: Deploy All Stack
+        continue-on-error: true
         working-directory: ${{ matrix.stack.stack_name }}
         run: |
           STAGE="${{ needs.get-stage-and-region.outputs.stage }}"
@@ -246,6 +247,7 @@ jobs:
       
       - name: Deploy Only Function
         working-directory: ${{ matrix.stack.stack_name }}
+        continue-on-error: true
         run: |
           STAGE="${{ needs.get-stage-and-region.outputs.stage }}"          
           npx serverless deploy function asd qwerty-f ${{ matrix.stack.lambda }} --stage $STAGE
