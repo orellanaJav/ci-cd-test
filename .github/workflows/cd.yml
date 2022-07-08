@@ -250,9 +250,6 @@ jobs:
         run: |
           STAGE="${{ needs.get-stage-and-region.outputs.stage }}"          
           npx serverless deploy function -f ${{ matrix.stack.lambda }} --stage $STAGE
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         if: ${{ matrix.stack.fullDeploy == 'false' }}
 
       - name: Send Success Deploy Slack Message
@@ -275,21 +272,8 @@ jobs:
           SLACK_MESSAGE: 'Ha ocurrido un error al realizar la acción :x:'
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_FOOTER: 'Tech'
-
-  # send-slack-message:
-  #   runs-on: ubuntu-latest
-  #   needs: ["deploy"]
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #     - name: send a slack message
-  #       uses: rtCamp/action-slack-notify@v2
-  #       env:
-  #         SLACK_COLOR: 'good'
-  #         SLACK_TITLE: Resultado
-  #         SLACK_MESSAGE: 'Acción realizada con éxito :rocket:'
-  #         SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-  #         SLACK_FOOTER: ' '
-
+  
+  # Hecho en casa, pero mas lento por ser docker :(
   # send-slack-message:
   #   runs-on: ubuntu-latest
   #   needs: ["deploy"]
