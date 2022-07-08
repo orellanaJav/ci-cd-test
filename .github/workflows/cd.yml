@@ -248,7 +248,7 @@ jobs:
         working-directory: ${{ matrix.stack.stack_name }}
         run: |
           STAGE="${{ needs.get-stage-and-region.outputs.stage }}"          
-          npx serverless deploy function -f ${{ matrix.stack.lambda }} --stage $STAGE
+          npx serverless deploy function asd qwerty-f ${{ matrix.stack.lambda }} --stage $STAGE
 
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
