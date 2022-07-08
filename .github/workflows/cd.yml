@@ -255,9 +255,25 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         if: ${{ matrix.stack.fullDeploy == 'false' }}
 
-      - name: Job Status
-        run: |
-          echo ${{ job.status }}
+      - name: Send Success Deploy Slack Message
+        if: ${{ job.status == 'success' }}
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_TITLE: Resultado
+          SLACK_MESSAGE: 'Acción realizada con éxito :rocket:'
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_FOOTER: ' '
+      - name: Send Error Deploy Slack Message
+        continue-on-error: true
+        if: ${{ job.status == 'failure' || job.status == 'cancelled' }}
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_TITLE: Resultado
+          SLACK_MESSAGE: 'Ha ocurrido un error al realizar la acción :x:'
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_FOOTER: ' '
 
   send-slack-message:
     runs-on: ubuntu-latest
