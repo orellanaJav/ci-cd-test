@@ -238,7 +238,7 @@ jobs:
         run: npm install        
 
       - name: Deploy All Stack
-        continue-on-error: true
+        id: deploy-all-stack
         working-directory: ${{ matrix.stack.stack_name }}
         run: |
           STAGE="${{ needs.get-stage-and-region.outputs.stage }}"
@@ -247,11 +247,10 @@ jobs:
       
       - name: Deploy Only Function
         working-directory: ${{ matrix.stack.stack_name }}
-        continue-on-error: true
+        id: deploy-only-function
         run: |
           STAGE="${{ needs.get-stage-and-region.outputs.stage }}"          
           npx serverless deploy function asd qwerty-f ${{ matrix.stack.lambda }} --stage $STAGE
-
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -268,7 +267,7 @@ jobs:
           SLACK_FOOTER: 'Tech'
       - name: Send Error Deploy Slack Message
         continue-on-error: true
-        if: ${{ job.status == 'failure' || job.status == 'cancelled' }}
+        if: failure()
         uses: rtCamp/action-slack-notify@v2
         env:
           SLACK_COLOR: ${{ job.status }}
