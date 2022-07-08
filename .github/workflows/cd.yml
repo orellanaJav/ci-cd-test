@@ -242,7 +242,7 @@ jobs:
         run: |
           STAGE="${{ needs.get-stage-and-region.outputs.stage }}"
           npx serverless deploy --stage $STAGE
-          echo "::set-output name=test-hola::$( echo ${{ matrix.stack.stack_name }} )\n"
+          echo "::set-output name=test-hola::$( echo "Stack ${{ matrix.stack.stack_name }}" )"
         if: ${{ matrix.stack.fullDeploy == 'true' }}
       
       - name: Deploy Only Function
@@ -251,7 +251,7 @@ jobs:
         run: |
           STAGE="${{ needs.get-stage-and-region.outputs.stage }}"          
           npx serverless deploy function -f ${{ matrix.stack.lambda }} --stage $STAGE
-          echo "::set-output name=test-hola::$( echo ${{ matrix.stack.lambda }} )\n"
+          echo "::set-output name=test-hola::$( echo "Lambda ${{ matrix.stack.lambda }}" )"
         if: ${{ matrix.stack.fullDeploy == 'false' }}
 
       - name: Send Success Deploy Slack Message
@@ -261,7 +261,7 @@ jobs:
         env:
           SLACK_COLOR: ${{ job.status }}
           SLACK_TITLE: Resultado
-          SLACK_MESSAGE: ${{ join(steps.deploy-all-stack.outputs.*, '\n') || join(steps.deploy-only-function.outputs.*, '\n') }}
+          SLACK_MESSAGE: No se ha podido desplegar el ** ${{ join(steps.deploy-all-stack.outputs.*) || join(steps.deploy-only-function.outputs.*) }} **
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_FOOTER: 'Tech'
       - name: Send Error Deploy Slack Message
@@ -272,7 +272,7 @@ jobs:
         env:
           SLACK_COLOR: ${{ job.status }}
           SLACK_TITLE: Resultado
-          SLACK_MESSAGE: ${{ join(steps.deploy-all-stack.outputs.*, '\n') || join(steps.deploy-only-function.outputs.*, '\n') }}
+          SLACK_MESSAGE: Se ha desplegado correctamente el ** ${{ join(steps.deploy-all-stack.outputs.*) || join(steps.deploy-only-function.outputs.*) }} **
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_FOOTER: 'Tech'
   
