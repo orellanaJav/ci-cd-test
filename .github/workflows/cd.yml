@@ -263,7 +263,7 @@ jobs:
           SLACK_TITLE: Resultado
           SLACK_MESSAGE: 'Acción realizada con éxito :rocket:'
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-          SLACK_FOOTER: ' '
+          SLACK_FOOTER: 'Tech'
       - name: Send Error Deploy Slack Message
         continue-on-error: true
         if: ${{ job.status == 'failure' || job.status == 'cancelled' }}
@@ -273,21 +273,21 @@ jobs:
           SLACK_TITLE: Resultado
           SLACK_MESSAGE: 'Ha ocurrido un error al realizar la acción :x:'
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-          SLACK_FOOTER: ' '
+          SLACK_FOOTER: 'Tech'
 
-  send-slack-message:
-    runs-on: ubuntu-latest
-    needs: ["deploy"]
-    steps:
-      - uses: actions/checkout@v2
-      - name: send a slack message
-        uses: rtCamp/action-slack-notify@v2
-        env:
-          SLACK_COLOR: 'good'
-          SLACK_TITLE: Resultado
-          SLACK_MESSAGE: 'Acción realizada con éxito :rocket:'
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-          SLACK_FOOTER: ' '
+  # send-slack-message:
+  #   runs-on: ubuntu-latest
+  #   needs: ["deploy"]
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: send a slack message
+  #       uses: rtCamp/action-slack-notify@v2
+  #       env:
+  #         SLACK_COLOR: 'good'
+  #         SLACK_TITLE: Resultado
+  #         SLACK_MESSAGE: 'Acción realizada con éxito :rocket:'
+  #         SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+  #         SLACK_FOOTER: ' '
 
   # send-slack-message:
   #   runs-on: ubuntu-latest
