@@ -261,7 +261,7 @@ jobs:
         env:
           SLACK_COLOR: ${{ job.status }}
           SLACK_TITLE: Resultado
-          SLACK_MESSAGE: Se ha desplegado correctamente el ${{ steps.deploy-all-stack.outputs.type || steps.deploy-only-function.outputs.type }}
+          SLACK_MESSAGE: Se ha desplegado correctamente el ${{ steps.deploy-all-stack.outputs.type || steps.deploy-only-function.outputs.type }} para el stage *${{ needs.get-stage-and-region.outputs.stage }}*
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_FOOTER: 'Tech'
       
@@ -272,7 +272,7 @@ jobs:
         env:
           SLACK_COLOR: ${{ job.status }}
           SLACK_TITLE: Resultado
-          SLACK_MESSAGE: No se ha podido desplegar el ${{ steps.deploy-all-stack.outputs.type || steps.deploy-only-function.outputs.type }}
+          SLACK_MESSAGE: No se ha podido desplegar el ${{ steps.deploy-all-stack.outputs.type || steps.deploy-only-function.outputs.type }} para el stage *${{ needs.get-stage-and-region.outputs.stage }}*
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_FOOTER: 'Tech'
   
