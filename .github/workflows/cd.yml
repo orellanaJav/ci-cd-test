@@ -13,6 +13,8 @@ env:
   DEV_REGION: sa-east-1  
   RELEASE_REGION: us-east-1
   PROD_REGION: us-east-1
+  SERVICES_DEPLOYED: ""
+
 
 jobs:
   get-stage-and-region:
@@ -253,6 +255,10 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         if: ${{ matrix.stack.fullDeploy == 'false' }}
 
+      - name: Job Status
+        run: |
+          echo ${{ job.status }}
+
   send-slack-message:
     runs-on: ubuntu-latest
     needs: ["deploy"]
@@ -261,9 +267,9 @@ jobs:
       - name: send a slack message
         uses: rtCamp/action-slack-notify@v2
         env:
-          SLACK_COLOR: 'good' # or a specific color like 'good' or '#ff00ff'
-          SLACK_MESSAGE: 'Post Content :rocket:'
-          SLACK_TITLE: Post Title
+          SLACK_COLOR: 'good'
+          SLACK_TITLE: Resultado
+          SLACK_MESSAGE: 'Acción realizada con éxito :rocket:'
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_FOOTER: ' '
 
