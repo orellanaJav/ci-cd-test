@@ -259,7 +259,7 @@ jobs:
         env:
           SLACK_COLOR: ${{ job.status }}
           SLACK_TITLE: Resultado
-          SLACK_MESSAGE: 'Acción realizada con éxito :rocket:'
+          SLACK_MESSAGE: 'Despliegue realizado con éxito :rocket:'
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_FOOTER: 'Tech'
       - name: Send Error Deploy Slack Message
@@ -269,7 +269,7 @@ jobs:
         env:
           SLACK_COLOR: ${{ job.status }}
           SLACK_TITLE: Resultado
-          SLACK_MESSAGE: 'Ha ocurrido un error al realizar la acción :x:'
+          SLACK_MESSAGE: 'Ha ocurrido un error al realizar el despliegue :x:'
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_FOOTER: 'Tech'
   
