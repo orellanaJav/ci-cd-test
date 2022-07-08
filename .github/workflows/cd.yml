@@ -242,6 +242,7 @@ jobs:
         run: |
           STAGE="${{ needs.get-stage-and-region.outputs.stage }}"
           npx serverless deploy --stage $STAGE
+          echo "::set-output name=test-hola::$( echo ${{ matrix.stack.stack_name }} )\n"
         if: ${{ matrix.stack.fullDeploy == 'true' }}
       
       - name: Deploy Only Function
@@ -250,6 +251,7 @@ jobs:
         run: |
           STAGE="${{ needs.get-stage-and-region.outputs.stage }}"          
           npx serverless deploy function -f ${{ matrix.stack.lambda }} --stage $STAGE
+          echo "::set-output name=test-hola::$( echo ${{ matrix.stack.lambda }} )\n"
         if: ${{ matrix.stack.fullDeploy == 'false' }}
 
       - name: Send Success Deploy Slack Message
@@ -259,17 +261,18 @@ jobs:
         env:
           SLACK_COLOR: ${{ job.status }}
           SLACK_TITLE: Resultado
-          SLACK_MESSAGE: 'Despliegue realizado con éxito :rocket:'
+          SLACK_MESSAGE: ${{ join(steps.deploy-all-stack.outputs.*, '\n') || join(steps.deploy-only-function.outputs.*, '\n') }}
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_FOOTER: 'Tech'
       - name: Send Error Deploy Slack Message
+
         continue-on-error: true
         if: failure()
         uses: rtCamp/action-slack-notify@v2
         env:
           SLACK_COLOR: ${{ job.status }}
           SLACK_TITLE: Resultado
-          SLACK_MESSAGE: 'Ha ocurrido un error al realizar el despliegue :x:'
+          SLACK_MESSAGE: ${{ join(steps.deploy-all-stack.outputs.*, '\n') || join(steps.deploy-only-function.outputs.*, '\n') }}
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_FOOTER: 'Tech'
   
