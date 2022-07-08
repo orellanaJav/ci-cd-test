@@ -1,0 +1,9 @@
+{
+    "ENVIRONMENT": {
+        "hola": 123
+    },
+    "LAYERS": [
+        "arn:aws:lambda:sa-east-1:907015885877:layer:CustomFunction:3"
+    ],
+    "VPC": {}
+}

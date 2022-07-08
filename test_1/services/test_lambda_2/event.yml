@@ -1,0 +1,16 @@
+test_lambda_2:
+  description: 
+  environment: ${file(services/test_lambda_2/setup/${opt:stage, 'dev'}/config.json):ENVIRONMENT}
+  layers: ${file(services/test_lambda_2/setup/${opt:stage, 'dev'}/config.json):LAYERS}
+  handler: test_lambda_2.lambda_handler
+  module: services/test_lambda_2/core
+  name: test-1-test_lambda_2
+  tags:
+    stack_name: test-1
+    lambda_name: test_lambda_2
+  package:
+    patterns:
+      - '!./**'
+      - 'services/test_lambda_2/**'
+      - '!services/test_lambda_2/core/resources/*.yml'
+      - '!services/test_lambda_2/core/requirements.txt'
