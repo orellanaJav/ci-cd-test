@@ -240,9 +240,9 @@ jobs:
         id: deploy-all-stack
         working-directory: ${{ matrix.stack.stack_name }}
         run: |
+          echo "::set-output name=type::$( echo "Stack *${{ matrix.stack.stack_name }}*" )"
           STAGE="${{ needs.get-stage-and-region.outputs.stage }}"
           npx serverless deploy --stage $STAGE
-          echo "::set-output name=type::$( echo "Stack *${{ matrix.stack.stack_name }}*" )"
         if: ${{ matrix.stack.fullDeploy == 'true' }}
       
       - name: Deploy Only Function
@@ -251,7 +251,7 @@ jobs:
         run: |
           echo "::set-output name=type::$( echo "Lambda *${{ matrix.stack.lambda }}* del stack *${{ matrix.stack.stack_name }}*" )"
           STAGE="${{ needs.get-stage-and-region.outputs.stage }}"          
-          npx serverless deploy asdx function -f ${{ matrix.stack.lambda }} --stage $STAGE          
+          npx serverless deploy function -f ${{ matrix.stack.lambda }} --stage $STAGE          
         if: ${{ matrix.stack.fullDeploy == 'false' }}
 
       - name: Send Success Deploy Slack Message
