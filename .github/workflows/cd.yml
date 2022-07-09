@@ -249,9 +249,9 @@ jobs:
         working-directory: ${{ matrix.stack.stack_name }}
         id: deploy-only-function
         run: |
+          echo "::set-output name=type::$( echo "Lambda *${{ matrix.stack.lambda }}* del stack *${{ matrix.stack.stack_name }}*" )"
           STAGE="${{ needs.get-stage-and-region.outputs.stage }}"          
           npx serverless deploy asdx function -f ${{ matrix.stack.lambda }} --stage $STAGE          
-          echo "::set-output name=type::$( echo "Lambda *${{ matrix.stack.lambda }}* del stack *${{ matrix.stack.stack_name }}*" )"
         if: ${{ matrix.stack.fullDeploy == 'false' }}
 
       - name: Send Success Deploy Slack Message
