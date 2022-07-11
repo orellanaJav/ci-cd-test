@@ -88,7 +88,7 @@ jobs:
         working-directory: ${{ matrix.stack.stack_name }}
         id: run_tests
         run: |
-          echo "::set-output name=mix-test::$( echo "Stack ${{ matrix.stack.lambda }}" )\n"
+          echo "::set-output name=mix-test::$( echo "Stack ${{ matrix.stack.lambda }}" )"
           python -m unittest discover services/${{ matrix.stack.lambda }}/tests
 
       - name: Send Success Deploy Slack Message
@@ -98,7 +98,7 @@ jobs:
         env:
           SLACK_COLOR: ${{ job.status }}
           SLACK_TITLE: Resultado Test
-          SLACK_MESSAGE: ${{join(steps.run_tests.outputs.*, '\n')}}
+          SLACK_MESSAGE: ${{steps.run_tests.outputs.mix-test}}
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_FOOTER: 'Tech'
       
@@ -109,7 +109,7 @@ jobs:
         env:
           SLACK_COLOR: ${{ job.status }}
           SLACK_TITLE: Resultado
-          SLACK_MESSAGE: ${{join(steps.run_tests.outputs.*, '\n')}}
+          SLACK_MESSAGE: ${{steps.run_tests.outputs.mix-test}}
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_FOOTER: 'Tech'
 
