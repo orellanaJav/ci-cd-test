@@ -88,9 +88,9 @@ jobs:
         working-directory: ${{ matrix.stack.stack_name }}
         id: test-function
         run: |
+          echo "::set-output name=type::$( echo "Lambda *${{ matrix.stack.lambda }}* del stack *${{ matrix.stack.stack_name }}*" )"
           python -m unittest discover services/${{ matrix.stack.lambda }}/tests
 
-          echo "::set-output name=type::$( echo "Lambda *${{ matrix.stack.lambda }}* del stack *${{ matrix.stack.stack_name }}*" )"
 
       - name: Send Success Deploy Slack Message
         continue-on-error: true
