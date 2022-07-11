@@ -86,11 +86,10 @@ jobs:
 
       - name: Test Function
         working-directory: ${{ matrix.stack.stack_name }}
-        id: test-function
+        id: unittest-step
         run: |
-          echo "::set-output name=type::$( echo "Lambda *${{ matrix.stack.lambda }}* del stack *${{ matrix.stack.stack_name }}*" )"
+          echo "::set-output name=type::$( echo "holaaa" )"
           python -m unittest discover services/${{ matrix.stack.lambda }}/tests
-
 
       - name: Send Success Deploy Slack Message
         continue-on-error: true
@@ -99,7 +98,7 @@ jobs:
         env:
           SLACK_COLOR: ${{ job.status }}
           SLACK_TITLE: Resultado Test
-          SLACK_MESSAGE: Se ha testeado correctamente el ${{ steps.test-function }}
+          SLACK_MESSAGE: Se ha testeado correctamente el ${{ steps.unittest-step.type }}
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_FOOTER: 'Tech'
       
@@ -110,7 +109,7 @@ jobs:
         env:
           SLACK_COLOR: ${{ job.status }}
           SLACK_TITLE: Resultado
-          SLACK_MESSAGE: Ha fallado el test para el ${{ steps.test-function.type }}
+          SLACK_MESSAGE: Ha fallado el test para el ${{ steps.unittest-step.type }}
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_FOOTER: 'Tech'
 

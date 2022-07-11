@@ -11,7 +11,7 @@ class ExampleTestCase(unittest.TestCase):
     """
 
     def test_upper(self):
-        self.assertEqual('foo'.upper(), 'FoxO')
+        self.assertEqual('foo'.upper(), 'FoO')
 
     def test_isupper(self):
         self.assertTrue('FOO'.isupper())
