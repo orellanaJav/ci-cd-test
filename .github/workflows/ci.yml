@@ -98,7 +98,7 @@ jobs:
         env:
           SLACK_COLOR: ${{ job.status }}
           SLACK_TITLE: Resultado Test
-          SLACK_MESSAGE: Se ha testeado correctamente el ${{ steps.unittest-step.type }}
+          SLACK_MESSAGE: Se ha testeado correctamente el "${{ steps.unittest-step.type }}"
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_FOOTER: 'Tech'
       
@@ -109,7 +109,7 @@ jobs:
         env:
           SLACK_COLOR: ${{ job.status }}
           SLACK_TITLE: Resultado
-          SLACK_MESSAGE: Ha fallado el test para el ${{ steps.unittest-step.type }}
+          SLACK_MESSAGE: Ha fallado el test para el "${{ steps.unittest-step.type }}"
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_FOOTER: 'Tech'
 
