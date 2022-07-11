@@ -98,7 +98,7 @@ jobs:
         env:
           SLACK_COLOR: ${{ job.status }}
           SLACK_TITLE: Resultado Test
-          SLACK_MESSAGE: ${{steps.run_tests.outputs.mix-test}}
+          SLACK_MESSAGE: Pruebas exitosas para ${{steps.run_tests.outputs.mix-test}}
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_FOOTER: 'Tech'
       
@@ -109,7 +109,7 @@ jobs:
         env:
           SLACK_COLOR: ${{ job.status }}
           SLACK_TITLE: Resultado
-          SLACK_MESSAGE: ${{steps.run_tests.outputs.mix-test}}
+          SLACK_MESSAGE: Fallaron las pruebas para ${{steps.run_tests.outputs.mix-test}}
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_FOOTER: 'Tech'
 
