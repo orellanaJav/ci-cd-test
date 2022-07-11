@@ -152,11 +152,6 @@ jobs:
                 MAKE_FULL_DEPLOY=true
               fi
 
-              # if [[ $path == *"requirements"* ]]; then
-              #   MAKE_FULL_DEPLOY=true
-              # fi
-              
-
               stack_item="{\"stack_name\":\"$stack\",\"fullDeploy\":\"$MAKE_FULL_DEPLOY\",\"lambda\":\"$lambda\"},"
 
               if [[ $MAKE_FULL_DEPLOY == 'true' ]]; then
