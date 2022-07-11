@@ -88,7 +88,7 @@ jobs:
         working-directory: ${{ matrix.stack.stack_name }}
         id: run_tests
         run: |
-          echo "::set-output name=mix-test::$( echo "Lambda *${{ matrix.stack.lambda }}* del stack *${{ matrix.stack.stack_name }}*" )"
+          echo "::set-output name=mix-test::$( echo "lambda *${{ matrix.stack.lambda }}* del stack *${{ matrix.stack.stack_name }}*" )"
           python -m unittest discover services/${{ matrix.stack.lambda }}/tests
 
       - name: Send Success Deploy Slack Message
