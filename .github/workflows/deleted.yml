@@ -1,4 +1,4 @@
-name: Test Deleted
+name: Deleted
 
 on:
   push:
@@ -235,21 +235,37 @@ jobs:
           python-version: '3.9'
         if: ${{ matrix.stacks.delete_full_stack == true }}
       - name: Remove Full Stack
+        id: remove-full-stack
         if: ${{ matrix.stacks.delete_full_stack == true }}        
         run: |
-          echo ${{ github.event.before }}
-          echo $GITHUB_SHA
+          echo "::set-output name=type::$( echo "Stack *${{ matrix.stacks.stack_name }}*" )"
           git checkout ${{ github.event.before }}
-          pwd
-          ls -la
           STAGE="${{ needs.get-stage-and-region.outputs.stage }}"
           REGION="${{ needs.get-stage-and-region.outputs.region }}"
-          echo "$STAGE"
-          echo "$REGION"
-          echo ${{ matrix.stacks.stack_name }}
           cd ${{ matrix.stacks.stack_name }}
           npx serverless remove --stage $STAGE
-          # npx serverless remove ${{ matrix.stacks.stack_name }} --stage $STAGE
+
+      - name: Send Success Stack Deleted Slack Message
+        continue-on-error: true
+        if: ${{ job.status == 'success' }}
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_TITLE: Resultado
+          SLACK_MESSAGE: Se ha eliminado correctamente el ${{ steps.remove-full-stack.outputs.type }} para el stage *${{ needs.get-stage-and-region.outputs.stage }}*
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_FOOTER: 'Tech'
+      
+      - name: Send Error Stack Deleted Slack Message
+        continue-on-error: true
+        if: failure()
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_TITLE: Resultado
+          SLACK_MESSAGE: Ha ocurrido un error al eliminar el ${{ steps.remove-full-stack.outputs.type }} para el stage *${{ needs.get-stage-and-region.outputs.stage }}*
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_FOOTER: 'Tech'
   
   delete-lambda-service:
     name: Delete Lambda Service
@@ -291,18 +307,36 @@ jobs:
           python-version: '3.9'
         if: ${{ matrix.lambdas.delete_full_lambda == true }}
       - name: Remove Lambda
-        if: ${{ matrix.lambdas.delete_full_lambda == true }}        
+        if: ${{ matrix.lambdas.delete_full_lambda == true }}
+        id: remove-lambda
         run: |
+          echo "::set-output name=type::$( echo "Lambda *${{ matrix.lambdas.lambda }}* del stack *${{ matrix.lambdas.stack_name }}*" )"
           STAGE="${{ needs.get-stage-and-region.outputs.stage }}"
-          REGION="${{ needs.get-stage-and-region.outputs.region }}"
-          echo "$STAGE"
-          echo "$REGION"
-          echo ${{ matrix.lambdas.lambda_name }}
-          
+          REGION="${{ needs.get-stage-and-region.outputs.region }}"          
           cd ${{ matrix.lambdas.stack_name }}          
           npx serverless deploy --stage $STAGE
-          # npx serverless ${{ matrix.lambdas.lambda_name }}:remove --stage $STAGE
-          # npx serverless remove ${{ matrix.stacks.stack_name }} --stage $STAGE
+
+      - name: Send Success Lambda Deleted Slack Message
+        continue-on-error: true
+        if: ${{ job.status == 'success' }}
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_TITLE: Resultado
+          SLACK_MESSAGE: Se ha eliminado correctamente el ${{ steps.remove-lambda.outputs.type }} para el stage *${{ needs.get-stage-and-region.outputs.stage }}*
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_FOOTER: 'Tech'
+      
+      - name: Send Error Lambda Deleted Slack Message
+        continue-on-error: true
+        if: failure()
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_TITLE: Resultado
+          SLACK_MESSAGE: Ha ocurrido un error al eliminar el ${{ steps.remove-lambda.outputs.type }} para el stage *${{ needs.get-stage-and-region.outputs.stage }}*
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_FOOTER: 'Tech'
 
   # get-stage-and-region:
   #   name: Get Stage And Region by Branch
