@@ -8,9 +8,6 @@ custom:
     - rm -rf .serverless/services/test_1/core/requirements/*.dist-info
     - rm -rf .serverless/services/test_1/core/requirements/*.egg-info
     - rm -rf .serverless/services/test_1/core/requirements/requirements*
-    - rm -rf .serverless/services/test_2/core/requirements/*.dist-info
-    - rm -rf .serverless/services/test_2/core/requirements/*.egg-info
-    - rm -rf .serverless/services/test_2/core/requirements/requirements*
     - rm -rf .serverless/services/test_3/core/requirements/*.dist-info
     - rm -rf .serverless/services/test_3/core/requirements/*.egg-info
     - rm -rf .serverless/services/test_3/core/requirements/requirements*
@@ -20,7 +17,6 @@ custom:
 frameworkVersion: '3'
 functions:
 - ${file(services/test_1/event.yml)}
-- ${file(services/test_2/event.yml)}
 - ${file(services/test_3/event.yml)}
 - ${file(services/test_5/event.yml)}
 package:
