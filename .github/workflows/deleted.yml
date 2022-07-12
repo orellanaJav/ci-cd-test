@@ -321,7 +321,12 @@ jobs:
           STAGE="${{ needs.get-stage-and-region.outputs.stage }}"
           REGION="${{ needs.get-stage-and-region.outputs.region }}"          
           cd ${{ matrix.lambdas.stack_name }}          
-          npx serverless deploy --stage $STAGE
+          npx serverless deployasd --stage $STAGE
+
+      - name: Revert pushed changes
+        if: failure()
+        run: |
+          git revert ${{ github.event.before }}
 
       - name: Send Success Lambda Deleted Slack Message
         continue-on-error: true
