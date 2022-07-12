@@ -316,7 +316,7 @@ jobs:
           STAGE="${{ needs.get-stage-and-region.outputs.stage }}"
           REGION="${{ needs.get-stage-and-region.outputs.region }}"          
           cd ${{ matrix.lambdas.stack_name }}          
-          npx serverless asdasd deploy --stage $STAGE
+          npx serverless deploy --stage $STAGE
 
       - name: Send Success Lambda Deleted Slack Message
         continue-on-error: true
