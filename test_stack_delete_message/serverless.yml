@@ -4,13 +4,9 @@ custom:
     dockerizePip: non-linux
   runtime: ${param:runtime, "python3.9"}
   scriptHooks:
-    before:package:createDeploymentArtifacts:
-    - rm -rf .serverless/services/test_3/core/requirements/*.dist-info
-    - rm -rf .serverless/services/test_3/core/requirements/*.egg-info
-    - rm -rf .serverless/services/test_3/core/requirements/requirements*
+    before:package:createDeploymentArtifacts: []
 frameworkVersion: '3'
-functions:
-- ${file(services/test_3/event.yml)}
+functions: []
 package:
   excludeDevDependencies: true
   individually: true
