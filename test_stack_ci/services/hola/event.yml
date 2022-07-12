@@ -1,0 +1,16 @@
+hola:
+  description: hola
+  environment: ${file(services/hola/setup/${opt:stage, 'dev'}/config.json):ENVIRONMENT}
+  handler: hola.lambda_handler
+  layers: ${file(services/hola/setup/${opt:stage, 'dev'}/config.json):LAYERS}
+  module: services/hola/core
+  name: test-stack-ci-hola
+  package:
+    patterns:
+    - '!./**'
+    - services/hola/**
+    - '!services/hola/core/resources/*.yml'
+    - '!services/hola/core/requirements.txt'
+  tags:
+    lambda_name: hola
+    stack_name: test-stack-ci
