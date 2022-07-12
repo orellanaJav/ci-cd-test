@@ -174,7 +174,7 @@ jobs:
 
       - name: Set Region For Release
         run: |
-          eecho "STAGE=release" >> $GITHUB_ENV
+          echo "STAGE=release" >> $GITHUB_ENV
           echo "REGION=$RELEASE_REGION" >> $GITHUB_ENV
         if: ${{ steps.extract_current_branch.outputs.branch == 'release' }}
 
@@ -326,6 +326,7 @@ jobs:
       - name: Revert pushed changes
         if: failure()
         run: |
+          git checkout $GITHUB_SHA
           git revert ${{ github.event.before }}
 
       - name: Send Success Lambda Deleted Slack Message
