@@ -327,6 +327,7 @@ jobs:
         if: failure()
         run: |
           git checkout $GITHUB_SHA
+          git stash
           git revert ${{ github.event.before }}
 
       - name: Send Success Lambda Deleted Slack Message
