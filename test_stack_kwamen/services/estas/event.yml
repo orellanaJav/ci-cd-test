@@ -1,0 +1,16 @@
+estas:
+  description: 
+  environment: ${file(services/estas/setup/${opt:stage, 'dev'}/config.json):ENVIRONMENT}
+  layers: ${file(services/estas/setup/${opt:stage, 'dev'}/config.json):LAYERS}
+  handler: estas.lambda_handler
+  module: services/estas/core
+  name: test-stack-ci-estas
+  tags:
+    stack_name: test-stack-ci
+    lambda_name: estas
+  package:
+    patterns:
+      - '!./**'
+      - 'services/estas/**'
+      - '!services/estas/core/resources/*.yml'
+      - '!services/estas/core/requirements.txt'
