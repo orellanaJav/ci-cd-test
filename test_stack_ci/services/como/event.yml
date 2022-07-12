@@ -1,0 +1,16 @@
+como:
+  description: 
+  environment: ${file(services/como/setup/${opt:stage, 'dev'}/config.json):ENVIRONMENT}
+  layers: ${file(services/como/setup/${opt:stage, 'dev'}/config.json):LAYERS}
+  handler: como.lambda_handler
+  module: services/como/core
+  name: test-stack-ci-como
+  tags:
+    stack_name: test-stack-ci
+    lambda_name: como
+  package:
+    patterns:
+      - '!./**'
+      - 'services/como/**'
+      - '!services/como/core/resources/*.yml'
+      - '!services/como/core/requirements.txt'
