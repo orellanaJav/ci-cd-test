@@ -247,7 +247,7 @@ jobs:
 
       - name: Send Success Stack Deleted Slack Message
         continue-on-error: true
-        if: ${{ job.status == 'success' }}
+        if: ${{ job.status == 'success' && matrix.stacks.delete_full_stack == true }}
         uses: rtCamp/action-slack-notify@v2
         env:
           SLACK_COLOR: ${{ job.status }}
@@ -310,7 +310,7 @@ jobs:
         if: ${{ matrix.lambdas.delete_full_lambda == true }}
         id: remove-lambda
         run: |
-          echo "::set-output name=type::$( echo "Lambda *${{ matrix.lambdas.lambda }}* del stack *${{ matrix.lambdas.stack_name }}*" )"
+          echo "::set-output name=type::$( echo "Lambda *${{ matrix.lambdas.lambda_name }}* del stack *${{ matrix.lambdas.stack_name }}*" )"
           STAGE="${{ needs.get-stage-and-region.outputs.stage }}"
           REGION="${{ needs.get-stage-and-region.outputs.region }}"          
           cd ${{ matrix.lambdas.stack_name }}          
