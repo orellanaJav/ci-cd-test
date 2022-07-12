@@ -5,9 +5,6 @@ custom:
   runtime: ${param:runtime, "python3.9"}
   scriptHooks:
     before:package:createDeploymentArtifacts:
-    - rm -rf .serverless/services/test_1/core/requirements/*.dist-info
-    - rm -rf .serverless/services/test_1/core/requirements/*.egg-info
-    - rm -rf .serverless/services/test_1/core/requirements/requirements*
     - rm -rf .serverless/services/test_2/core/requirements/*.dist-info
     - rm -rf .serverless/services/test_2/core/requirements/*.egg-info
     - rm -rf .serverless/services/test_2/core/requirements/requirements*
@@ -25,7 +22,6 @@ custom:
     - rm -rf .serverless/services/test_6/core/requirements/requirements*
 frameworkVersion: '3'
 functions:
-- ${file(services/test_1/event.yml)}
 - ${file(services/test_2/event.yml)}
 - ${file(services/test_3/event.yml)}
 - ${file(services/test_4/event.yml)}
