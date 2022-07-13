@@ -33,6 +33,7 @@ def lambda_handler(event: dict, context: dict) -> dict:
     """
 
     logger.info(environ.get('HOLA'))
+    logger.info(environ.get('HOLA'))
     receivers_data = []
     try:
         query_receivers_close_to_expire = (
