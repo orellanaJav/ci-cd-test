@@ -43,15 +43,12 @@ jobs:
           python-version: '3.9'
       - name: Install Dependencies
         run: |
-          echo ${GITHUB_REF#refs/heads/}
-          pwd
-          ls -la
           npm install 
       
       - name: Deploy
         working-directory: ${{ inputs.stack }}
         run: |
           echo "HOLA"
-          echo ${GITHUB_REF#refs/heads/}
-          git branches
-          npx serverless deploy --stage ${{ inputs.stage }}
+          STAGE="${GITHUB_REF#refs/heads/}"
+          echo "$STAGE"
+          npx serverless deploy --stage $STAGE 
