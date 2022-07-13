@@ -40,7 +40,10 @@ jobs:
         with:
           python-version: '3.9'
       - name: Install Dependencies
-        run: npm install 
+        run: |
+          pwd
+          ls -la
+          npm install 
       
       - name: Deploy
         working-directory: ${{ inputs.stack }}
