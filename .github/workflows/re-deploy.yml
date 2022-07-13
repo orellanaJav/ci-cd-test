@@ -48,7 +48,7 @@ jobs:
           fi
           echo "$STAGE"
           echo "::set-output name=stage::$( echo "$STAGE" )"
-          npx serverless deploy --stage $STAGE 
+          npx serverless asdasdasddqwerty deploy --stage $STAGE 
 
       - name: Send Success Deploy Slack Message
         continue-on-error: true
