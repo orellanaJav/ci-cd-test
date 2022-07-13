@@ -8,16 +8,6 @@ on:
         required: true
         default: '' 
         type: string
-      stage:
-        description: 'Stage to deploy'     
-        required: true
-        default: 'crafting' 
-        type: choice
-        options:
-        - crafting
-        - dev
-        - release
-        - prod
 
 jobs:
   re-run-deploy:
