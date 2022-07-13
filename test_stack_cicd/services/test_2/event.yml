@@ -1,0 +1,16 @@
+test_2:
+  description: 
+  environment: ${file(services/test_2/setup/${opt:stage, 'dev'}/config.json):ENVIRONMENT}
+  layers: ${file(services/test_2/setup/${opt:stage, 'dev'}/config.json):LAYERS}
+  handler: test_2.lambda_handler
+  module: services/test_2/core
+  name: test-stack-cicd-test_2
+  tags:
+    stack_name: test-stack-cicd
+    lambda_name: test_2
+  package:
+    patterns:
+      - '!./**'
+      - 'services/test_2/**'
+      - '!services/test_2/core/resources/*.yml'
+      - '!services/test_2/core/requirements.txt'
