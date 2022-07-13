@@ -1,4 +1,4 @@
-name: Re Run Deploy Stack
+name: Re Run Deploy Lambda
 on: 
   workflow_dispatch:
     branches: [crafting, dev, release, main]
