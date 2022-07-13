@@ -55,7 +55,7 @@ jobs:
         env:
           SLACK_COLOR: ${{ job.status }}
           SLACK_TITLE: Resultado
-          SLACK_MESSAGE: Se ha desplegado correctamente el stack ${{ inputs.stack }} para el stage ${GITHUB_REF#refs/heads/}
+          SLACK_MESSAGE: Se ha desplegado correctamente el stack *${{ inputs.stack }}* para el stage ${{ GITHUB_REF#refs/heads/ }}
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_FOOTER: 'Tech'
       
@@ -66,6 +66,6 @@ jobs:
         env:
           SLACK_COLOR: ${{ job.status }}
           SLACK_TITLE: Resultado
-          SLACK_MESSAGE: No se ha podido desplegar el stack ${{ inputs.stack }} para el stage ${GITHUB_REF#refs/heads/}
+          SLACK_MESSAGE: No se ha podido desplegar el stack *${{ inputs.stack }}* para el stage ${{ GITHUB_REF#refs/heads/ }}
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_FOOTER: 'Tech'
