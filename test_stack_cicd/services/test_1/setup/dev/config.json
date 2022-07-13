@@ -1,0 +1,7 @@
+{
+    "ENVIRONMENT": {
+        "HOLA": 123
+    },
+    "LAYERS": [],
+    "VPC": {}
+}
