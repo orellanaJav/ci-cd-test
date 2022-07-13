@@ -246,7 +246,7 @@ jobs:
         run: |
           echo "::set-output name=type::$( echo "Lambda *${{ matrix.stack.lambda }}* del stack *${{ matrix.stack.stack_name }}*" )"
           STAGE="${{ needs.get-stage-and-region.outputs.stage }}"          
-          npx serverless asdsaasd deploy function -f ${{ matrix.stack.lambda }} --stage $STAGE          
+          npx serverless deploy function -f ${{ matrix.stack.lambda }} --stage $STAGE          
         if: ${{ matrix.stack.fullDeploy == 'false' }}
 
       - name: Send Success Deploy Slack Message
