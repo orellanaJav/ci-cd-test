@@ -1,0 +1,47 @@
+on: 
+  workflow_dispatch:
+    inputs:
+      stack:
+        description: 'Nombre del stack'     
+        required: true
+        default: '' 
+        type: string
+      stage:
+        description: 'Stage to deploy'     
+        required: true
+        default: 'crafting' 
+        type: choice
+        options:
+        - crafting
+        - dev
+        - release
+        - prod
+
+jobs:
+  re-run-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cache node_modules
+        uses: actions/cache@v1
+        with:
+          path: ~/.npm
+          key: node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            node-
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+      - name: Setup Python
+        uses: actions/setup-python@v3        
+        with:
+          python-version: '3.9'
+      - name: Install Dependencies
+        run: npm install 
+      
+      - name: Deploy
+        working-directory: ${{ inputs.stack }}
+        run: |
+          npx serverless deploy --stage ${{ inputs.stage }}
