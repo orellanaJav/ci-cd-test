@@ -2,10 +2,10 @@ name: Test CI
 on:
   pull_request:
     branches:
-     - dev
-     - release
-     - prod
-     - crafting
+     - 'dev'
+     - 'release'
+     - 'main'
+     - 'crafting'
 
 jobs:
   changes:
