@@ -51,4 +51,7 @@ jobs:
       - name: Deploy
         working-directory: ${{ inputs.stack }}
         run: |
+          echo "HOLA"
+          echo ${GITHUB_REF#refs/heads/}
+          git branches
           npx serverless deploy --stage ${{ inputs.stage }}
