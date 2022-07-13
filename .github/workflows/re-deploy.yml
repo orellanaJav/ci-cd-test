@@ -36,6 +36,7 @@ jobs:
           npm install 
       
       - name: Deploy
+        id: re-deploy-stack
         working-directory: ${{ inputs.stack }}
         run: |
           STAGE="${GITHUB_REF#refs/heads/}"
@@ -46,6 +47,7 @@ jobs:
             STAGE="prod"
           fi
           echo "$STAGE"
+          echo "::set-output name=stage::$( echo "$STAGE" )"
           npx serverless deploy --stage $STAGE 
 
       - name: Send Success Deploy Slack Message
@@ -55,7 +57,7 @@ jobs:
         env:
           SLACK_COLOR: ${{ job.status }}
           SLACK_TITLE: Resultado
-          SLACK_MESSAGE: Se ha desplegado correctamente el stack *${{ inputs.stack }}* para el stage ${{ GITHUB_REF#refs/heads/ }}
+          SLACK_MESSAGE: Se ha desplegado correctamente el stack *${{ inputs.stack }}* para el stage *${{ steps.re-deploy-stack.outputs.stage }}*
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_FOOTER: 'Tech'
       
@@ -66,6 +68,6 @@ jobs:
         env:
           SLACK_COLOR: ${{ job.status }}
           SLACK_TITLE: Resultado
-          SLACK_MESSAGE: No se ha podido desplegar el stack *${{ inputs.stack }}* para el stage ${{ GITHUB_REF#refs/heads/ }}
+          SLACK_MESSAGE: No se ha podido desplegar el stack *${{ inputs.stack }}* para el stage *${{ steps.re-deploy-stack.outputs.stage }}*
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_FOOTER: 'Tech'
