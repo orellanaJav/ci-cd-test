@@ -38,7 +38,28 @@ jobs:
       - name: Deploy
         working-directory: ${{ inputs.stack }}
         run: |
-          echo "HOLA"
           STAGE="${GITHUB_REF#refs/heads/}"
           echo "$STAGE"
           npx serverless deploy --stage $STAGE 
+
+      - name: Send Success Deploy Slack Message
+        continue-on-error: true
+        if: ${{ job.status == 'success' }}
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_TITLE: Resultado
+          SLACK_MESSAGE: Se ha desplegado correctamente el stack ${{ inputs.stack }} para el stage ${GITHUB_REF#refs/heads/}
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_FOOTER: 'Tech'
+      
+      - name: Send Error Deploy Slack Message
+        continue-on-error: true
+        if: failure()
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_TITLE: Resultado
+          SLACK_MESSAGE: No se ha podido desplegar el stack ${{ inputs.stack }} para el stage ${GITHUB_REF#refs/heads/}
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_FOOTER: 'Tech'
