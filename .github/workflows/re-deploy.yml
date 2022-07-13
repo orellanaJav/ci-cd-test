@@ -49,5 +49,8 @@ jobs:
       - name: Deploy
         working-directory: ${{ inputs.stack }}
         run: |
+          echo "HOLA"
+          echo "$GITHUB_SHA"
+          git fetch origin $GITHUB_SHA --depth=1
           git branch
           npx serverless deploy --stage ${{ inputs.stage }}
