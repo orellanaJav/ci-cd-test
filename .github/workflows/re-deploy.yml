@@ -1,3 +1,4 @@
+name: Re deploy
 on: 
   workflow_dispatch:
     inputs:
