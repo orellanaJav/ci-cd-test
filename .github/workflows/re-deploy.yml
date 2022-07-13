@@ -1,6 +1,7 @@
 name: Re Run Stack Deploy
 on: 
   workflow_dispatch:
+    branches: [crafting, dev, release, main]
     inputs:
       stack:
         description: 'Nombre del stack'     
