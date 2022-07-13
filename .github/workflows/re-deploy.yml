@@ -49,5 +49,5 @@ jobs:
       - name: Deploy
         working-directory: ${{ inputs.stack }}
         run: |
-          git checkout ${{ inputs.stage }}
+          git branch
           npx serverless deploy --stage ${{ inputs.stage }}
