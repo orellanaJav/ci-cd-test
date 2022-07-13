@@ -1,4 +1,4 @@
-name: Re deploy
+name: Re Run Stack Deploy
 on: 
   workflow_dispatch:
     inputs:
@@ -49,4 +49,5 @@ jobs:
       - name: Deploy
         working-directory: ${{ inputs.stack }}
         run: |
+          git checkout ${{ inputs.stage }}
           npx serverless deploy --stage ${{ inputs.stage }}
