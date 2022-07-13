@@ -1,0 +1,78 @@
+name: Re Run Deploy Stack
+on: 
+  workflow_dispatch:
+    branches: [crafting, dev, release, main]
+    inputs:
+      stack:
+        description: 'Nombre del stack'     
+        required: true
+        default: '' 
+        type: string
+      lambda:
+        description: 'Nombre del lambda'     
+        required: true
+        default: '' 
+        type: string
+
+jobs:
+  re-run-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Cache node_modules
+        uses: actions/cache@v1
+        with:
+          path: ~/.npm
+          key: node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            node-
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+      - name: Setup Python
+        uses: actions/setup-python@v3        
+        with:
+          python-version: '3.9'
+      - name: Install Dependencies
+        run: |
+          npm install 
+      
+      - name: Deploy
+        id: re-deploy-stack
+        working-directory: ${{ inputs.stack }}
+        run: |
+          STAGE="${GITHUB_REF#refs/heads/}"
+          if [[ "$STAGE" == "crafting" ]]; then
+            STAGE="dev"
+          fi
+          if [[ "$STAGE" == "main" ]]; then
+            STAGE="prod"
+          fi
+          echo "$STAGE"
+          echo "::set-output name=stage::$( echo "$STAGE" )"
+          npx serverless deploy function -f ${{ inputs.lambda }} --stage $STAGE
+
+      - name: Send Success Deploy Slack Message
+        continue-on-error: true
+        if: ${{ job.status == 'success' }}
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_TITLE: Resultado
+          SLACK_MESSAGE: Se ha desplegado correctamente el lambda *${{ inputs.lambda }}* del stack *${{ inputs.stack }}* para el stage *${{ steps.re-deploy-stack.outputs.stage }}*
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_FOOTER: 'Tech'
+      
+      - name: Send Error Deploy Slack Message
+        continue-on-error: true
+        if: failure()
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_TITLE: Resultado
+          SLACK_MESSAGE: No se ha podido desplegar el lambda *${{ inputs.lambda }}* del stack *${{ inputs.stack }}* para el stage *${{ steps.re-deploy-stack.outputs.stage }}*
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_FOOTER: 'Tech'
