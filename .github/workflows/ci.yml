@@ -94,12 +94,15 @@ jobs:
           DIR="services/${{ matrix.stack.lambda }}/tests/"
           if [ -d "$DIR" ]
           then
-            if [ ! "$(ls -A $DIR)" ]; then
-              echo "$DIR tests is Empty"
-              exit 1
-            fi
+              if [ ! "$(ls -A $DIR)" ]; then
+                  echo "$DIR tests is Empty"
+                  exit 1
+              elif ! compgen -G "${DIR}/*_test.py" > /dev/null; then
+                  echo "In $DIR directory does not have test files."
+                  exit 1
+              fi
           else
-            echo "Directory $DIR not found."
+              echo "Directory $DIR not found."
           fi
 
       - name: Test Function
