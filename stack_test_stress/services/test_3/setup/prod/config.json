@@ -1,7 +1,0 @@
-{
-    "ENVIRONMENT": {},
-    "LAYERS": [
-        "arn:aws:lambda:sa-east-1:242956272159:layer:bifrost:28"
-    ],
-    "VPC": {}
-}
