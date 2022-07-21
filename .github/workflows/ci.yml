@@ -86,13 +86,29 @@ jobs:
         uses: actions/setup-python@v3        
         with:
           python-version: '3.9'
+      
+      - name: Comprobe Tests Files
+        working-directory: ${{ matrix.stack.stack_name }}
+        id: comprobe_tests_files
+        run: |
+          PATH="services/${{ matrix.stack.lambda }}/tests"
+          if [ -d "$PATH" ]
+          then
+            if [ ! "$(ls -A $PATH)" ]; then
+              echo "Tests folder is empty"
+              exit 1
+            fi
+          else
+            echo "Directory $PATH not found."
+            exit 1
+          fi
 
       - name: Test Function
         working-directory: ${{ matrix.stack.stack_name }}
         id: run_tests
         run: |
           echo "::set-output name=mix-test::$( echo "lambda *${{ matrix.stack.lambda }}* del stack *${{ matrix.stack.stack_name }}*" )"
-          python -m unittest discover services/${{ matrix.stack.lambda }}/tests
+          python -m unittest discover services/${{ matrix.stack.lambda }}/tests "*_test.py"
 
       - name: Send Success Deploy Slack Message
         continue-on-error: true
