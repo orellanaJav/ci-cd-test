@@ -91,19 +91,15 @@ jobs:
         working-directory: ${{ matrix.stack.stack_name }}
         id: comprobe_tests_files
         run: |
-          pwd
-          ls -la
-          echo "${{ matrix.stack.lambda }}"
-          PATH="services/"
-          if [ -d "$PATH" ]
+          DIR="services/${{ matrix.stack.lambda }}/tests"
+          if [ -d "$DIR" ]
           then
-            if [ ! "$(ls -A $PATH)" ]; then
-              echo "Tests folder is empty"
+            if [ ! "$(ls -A $DIR)" ]; then
+              echo "$DIR tests is Empty"
               exit 1
             fi
           else
-            echo "Directory $PATH not found."
-            exit 1
+            echo "Directory $DIR not found."
           fi
 
       - name: Test Function
