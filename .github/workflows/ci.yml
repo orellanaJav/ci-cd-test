@@ -94,7 +94,7 @@ jobs:
           pwd
           ls -la
           echo "${{ matrix.stack.lambda }}"
-          PATH="services/${{ matrix.stack.lambda }}/tests"
+          PATH="/services/${{ matrix.stack.lambda }}/tests"
           if [ -d "$PATH" ]
           then
             if [ ! "$(ls -A $PATH)" ]; then
