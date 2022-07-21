@@ -91,7 +91,7 @@ jobs:
         working-directory: ${{ matrix.stack.stack_name }}
         id: comprobe_tests_files
         run: |
-          DIR="services/${{ matrix.stack.lambda }}/tests"
+          DIR="services/${{ matrix.stack.lambda }}/"
           if [ -d "$DIR" ]
           then
             if [ ! "$(ls -A $DIR)" ]; then
