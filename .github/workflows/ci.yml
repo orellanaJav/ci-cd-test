@@ -91,6 +91,9 @@ jobs:
         working-directory: ${{ matrix.stack.stack_name }}
         id: comprobe_tests_files
         run: |
+          pwd
+          ls -la
+          echo "${{ matrix.stack.lambda }}"
           PATH="services/${{ matrix.stack.lambda }}/tests"
           if [ -d "$PATH" ]
           then
