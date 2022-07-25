@@ -1,5 +1,0 @@
-Resources:
-  bucketjavierorellanaresourcesTestresources:
-    Type: AWS::S3::Bucket
-    Properties:
-      BucketName: bucket-javier-orellana-resources-${opt:stage, 'dev'}
