@@ -110,6 +110,7 @@ jobs:
         id: run_tests
         run: |
           echo "::set-output name=mix-test::$( echo "lambda *${{ matrix.stack.lambda }}* del stack *${{ matrix.stack.stack_name }}*" )"
+          pip install pycodestyle
           python -m unittest discover services/${{ matrix.stack.lambda }}/tests "*_test.py"
 
       - name: Send Success Deploy Slack Message
