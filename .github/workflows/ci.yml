@@ -166,7 +166,7 @@ jobs:
           echo "::set-output name=mix-test::$( echo "lambda *${{ matrix.stack.lambda }}* del stack *${{ matrix.stack.stack_name }}*" )"
           make create_venv LAMBDA=${{ matrix.stack.lambda }}
           make install_requirements LAMBDA=${{ matrix.stack.lambda }}
-          make install_remote_layers LAMBDA=${{ matrix.stack.lambda }}
+          make install_remote_layers LAMBDA=${{ matrix.stack.lambda }} STAGE=${{ needs.get-stage-and-region.outputs.stage }}
           make run_tests LAMBDA=${{ matrix.stack.lambda }}
           make clean_env LAMBDA=${{ matrix.stack.lambda }}
 

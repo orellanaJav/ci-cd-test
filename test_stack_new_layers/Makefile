@@ -246,13 +246,11 @@ install_aws_layers:
 		exit 1
 	fi
 	@echo -e ${HEADER}"INSTALANDO LAYERS"${END};
-	@layers="$$(jq -c '(.LAYERS[])' ${LAMBDA_PATH}/setup/dev/config.json)"
+	@layers="$$(jq -c '(.LAYERS[])' ${LAMBDA_PATH}/setup/${STAGE}/config.json)"
 	@layers="$$(sed -e 's/^"//' -e 's/"$$//' <<<"$$layers")"
-	@echo "$$layers"
 	@if [[ "$$layers" ]]; then \
 		while read -r layer; do \
 			if $$(! grep -Fxq "$$layer" ${LAYERS_CACHE_PATH}/layers); then \
-				echo "LAYER ---> $$layer"
 				layer_url=$$(aws lambda \
 					get-layer-version-by-arn \
 					--arn $$layer --query \
