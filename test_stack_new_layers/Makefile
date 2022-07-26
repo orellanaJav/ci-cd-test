@@ -526,7 +526,12 @@ run_tests:
 	@echo -e ${HEADER}"-----------------------------------------"${END};
 	@. ${BIN_ACTIVATE}
 	@pip -q install pycodestyle
-	@python -m unittest discover ${LAMBDA_PATH}/tests "*_test.py"
+	@if ! python -m unittest discover ${LAMBDA_PATH}/tests "*_test.py"; then \
+		echo -e ${FAIL}"---------------------------------------------"${END}; \
+		echo -e ${FAIL}"[ERROR] ERRORES EN LOS TESTS EJECUTADOS"${END}; \
+		echo -e ${FAIL}"---------------------------------------------"${END}; \
+		exit 1
+	fi
 	@echo -e ${HEADER}"-----------------------------------------"${END};
 	@echo -e ${HEADER}"TESTS LOCALES FINALIZADOS"${END};
 	@echo -e ${HEADER}"-----------------------------------------"${END};
