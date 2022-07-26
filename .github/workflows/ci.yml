@@ -110,9 +110,8 @@ jobs:
         id: run_tests
         run: |
           echo "::set-output name=mix-test::$( echo "lambda *${{ matrix.stack.lambda }}* del stack *${{ matrix.stack.stack_name }}*" )"
-          aws lambda get-layer-version \
-          --layer-name layerTestBifr \
-          --version-number 2
+          aws lambda get-layer-version-by-arn \
+          --arn "arn:aws:lambda:sa-east-1:907015885877:layer:layerTest:13"
 
 
       # - name: Send Success Deploy Slack Message
