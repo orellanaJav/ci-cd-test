@@ -68,6 +68,14 @@ create_venv:
 			echo -e ${FAIL}"-----------------------------------------"${END}; \
 			exit 1
 		fi
+		echo ""; \
+		echo -e ${HEADER}"ACTUALIZANDO PIP"${END}; \
+		if ${PIP_PATH} install --upgrade pip; then \
+			echo ""; \
+			echo -e ${OKGREEN}"[OK] PIP ACTUALIZADO CORRECTAMENTE"${END}; \
+		else \
+			echo -e ${FAIL}"[ERROR] ERROR AL ACTUALIZAR PIP"${END}; \
+		fi
 	fi
 
 install_requirements:
