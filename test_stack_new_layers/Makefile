@@ -277,7 +277,7 @@ install_aws_layers:
 					rm -rf ${LAYERS_CACHE_PATH}/layers
 					exit 1
 				fi
-				if ! unzip "${SITE_PACKAGES_PATH}/$$layer.zip" -d "${SITE_PACKAGES_PATH}/"; then \
+				if ! unzip -qq "${SITE_PACKAGES_PATH}/$$layer.zip" -d "${SITE_PACKAGES_PATH}/"; then \
 					echo -e ${FAIL}"-------------------------------------------------------------------------------"${END}; \
 					echo -e ${FAIL}"[ERROR] HA OCURRIDO UN ERROR AL DESCOMPRIMIR LOS LAYERS A LA CARPETA DE DESTINO"${END}; \
 					echo -e ${FAIL}"-------------------------------------------------------------------------------"${END}; \
