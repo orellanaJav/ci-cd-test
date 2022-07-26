@@ -81,7 +81,13 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
+          aws-region: sa-east-1
+      - name: GET LAYER
+        run: |
+          aws lambda get-layer-version-by-arn \
+          --arn "arn:aws:lambda:sa-east-1:907015885877:layer:layerTest:13"
+
+
       - name: Setup Python
         uses: actions/setup-python@v3        
         with:

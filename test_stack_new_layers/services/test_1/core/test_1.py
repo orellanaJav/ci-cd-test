@@ -31,4 +31,5 @@ def lambda_handler(event: dict, context: dict) -> dict:
     logger.info('hola ---> ', layer_return)
     logger.info('hola ---> ', layer_return)
     logger.info('hola ---> ', layer_return)
+    logger.info('hola ---> ', layer_return)
     return {'status': 'status'}
