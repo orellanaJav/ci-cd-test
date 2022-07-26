@@ -82,16 +82,15 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: sa-east-1
+
+      - name: Setup Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.9'
       - name: GET LAYER
         run: |
           aws lambda get-layer-version-by-arn \
           --arn "arn:aws:lambda:sa-east-1:907015885877:layer:layerTest:13"
-
-
-      - name: Setup Python
-        uses: actions/setup-python@v3        
-        with:
-          python-version: '3.9'
       
       - name: Comprobe Tests Files
         working-directory: ${{ matrix.stack.stack_name }}
