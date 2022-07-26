@@ -294,10 +294,13 @@ install_aws_layers:
 				rm -rf "${SITE_PACKAGES_PATH}/$$layer.zip"; \
 				rm -rf ${PYTHON_LAYER_PATH}; \
 			fi; \
-		done <<< "$$layers"; \
-	fi;
+		done <<< "$$layers";
 	@echo -e ${OKGREEN}"[OK] LAYERS INSTALADOS CORRECTAMENTE "${END};
 	@echo -e ${HEADER}"--------------------------------------"${END};
+	else \
+		echo -e ${HEADER}"[INFO] NO HAY LAYERS CONFIGURADOS PARA INSTALAR "${END};
+		echo -e ${HEADER}"--------------------------------------"${END};
+	fi;
 
 
 # =============================================================================
