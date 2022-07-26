@@ -296,10 +296,10 @@ install_aws_layers:
 			fi; \
 		done <<< "$$layers";
 	@echo -e ${OKGREEN}"[OK] LAYERS INSTALADOS CORRECTAMENTE "${END};
-	@echo -e ${HEADER}"--------------------------------------"${END};
+	@echo -e ${HEADER}"-----------------------------------------"${END};
 	else \
 		echo -e ${HEADER}"[INFO] NO HAY LAYERS CONFIGURADOS PARA INSTALAR "${END};
-		echo -e ${HEADER}"--------------------------------------"${END};
+		echo -e ${HEADER}"-----------------------------------------"${END};
 	fi;
 
 
