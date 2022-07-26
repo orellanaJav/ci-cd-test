@@ -70,7 +70,7 @@ create_venv:
 		fi
 		echo ""; \
 		echo -e ${HEADER}"ACTUALIZANDO PIP"${END}; \
-		if ${PIP_PATH} install --upgrade pip; then \
+		if ${PIP_PATH} -q install --upgrade pip; then \
 			echo ""; \
 			echo -e ${OKGREEN}"[OK] PIP ACTUALIZADO CORRECTAMENTE"${END}; \
 		else \
