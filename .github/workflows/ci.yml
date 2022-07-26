@@ -7,7 +7,61 @@ on:
      - 'main'
      - 'crafting'
 
+env:
+  DEV_REGION: sa-east-1  
+  RELEASE_REGION: us-east-1
+  PROD_REGION: us-east-1
+
 jobs:
+  get-stage-and-region:
+    name: Get Stage And Region by Branch
+    runs-on: ubuntu-latest
+    outputs:
+      region: ${{ steps.stage-and-region.outputs.region }}
+      stage: ${{ steps.stage-and-region.outputs.stage }}
+    steps:
+      - name: Get Current Branch
+        shell: bash
+        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+        id: extract_current_branch
+
+      - name: Set Region For Dev
+        run: |
+          echo "STAGE=dev" >> $GITHUB_ENV
+          echo "REGION=$DEV_REGION" >> $GITHUB_ENV
+        if: ${{ steps.extract_current_branch.outputs.branch == 'dev' }}
+
+      - name: Set Region For Crafting
+        run: |
+          echo "STAGE=dev" >> $GITHUB_ENV
+          echo "REGION=$DEV_REGION" >> $GITHUB_ENV
+        if: ${{ steps.extract_current_branch.outputs.branch == 'crafting' }}
+
+      - name: Set Region For Release
+        run: |
+          echo "STAGE=release" >> $GITHUB_ENV
+          echo "REGION=$RELEASE_REGION" >> $GITHUB_ENV
+        if: ${{ steps.extract_current_branch.outputs.branch == 'release' }}
+
+      - name: Set Region For Production
+        run: |
+          echo "STAGE=prod" >> $GITHUB_ENV
+          echo "REGION=$PROD_REGION" >> $GITHUB_ENV
+        if: ${{ steps.extract_current_branch.outputs.branch == 'main' }}
+
+      - name: Get Stage And Region
+        id: stage-and-region
+        run: |
+          STAGE="${{ env.STAGE }}"
+          REGION="${{ env.REGION }}"
+          if [ -z "$STAGE" ]; then
+            STAGE="dev"
+          fi
+          if [ -z "$REGION" ]; then
+            REGION="$DEV_REGION"
+          fi
+          echo "::set-output name=stage::$( echo "$STAGE" )"
+          echo "::set-output name=region::$( echo "$REGION" )"
   changes:
     name: Changes
     runs-on: ubuntu-latest
@@ -67,7 +121,7 @@ jobs:
           fi
 
   tests:
-    needs: [changes]
+    needs: [changes, get-stage-and-region]
     name: Tests
     if: ${{ needs.changes.outputs.stack != '[]' && needs.changes.outputs.stack != '' }}
     strategy:
@@ -81,7 +135,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
+          aws-region: ${{ needs.get-stage-and-region.outputs.region }}
       - name: Setup Python
         uses: actions/setup-python@v3        
         with:
@@ -110,30 +164,33 @@ jobs:
         id: run_tests
         run: |
           echo "::set-output name=mix-test::$( echo "lambda *${{ matrix.stack.lambda }}* del stack *${{ matrix.stack.stack_name }}*" )"
-          pip install pycodestyle
-          python -m unittest discover services/${{ matrix.stack.lambda }}/tests "*_test.py"
+          make create_venv LAMBDA=${{ matrix.stack.lambda }}
+          make install_requirements LAMBDA=${{ matrix.stack.lambda }}
+          make install_remote_layers LAMBDA=${{ matrix.stack.lambda }} STAGE=${{ needs.get-stage-and-region.outputs.stage }}
+          make run_tests LAMBDA=${{ matrix.stack.lambda }}
+          make clean_env LAMBDA=${{ matrix.stack.lambda }}
 
-      - name: Send Success Deploy Slack Message
-        continue-on-error: true
-        if: ${{ job.status == 'success' }}
-        uses: rtCamp/action-slack-notify@v2
-        env:
-          SLACK_COLOR: ${{ job.status }}
-          SLACK_TITLE: Resultado Test
-          SLACK_MESSAGE: Pruebas exitosas para ${{steps.run_tests.outputs.mix-test}}
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-          SLACK_FOOTER: 'Tech'
+      # - name: Send Success Deploy Slack Message
+      #   continue-on-error: true
+      #   if: ${{ job.status == 'success' }}
+      #   uses: rtCamp/action-slack-notify@v2
+      #   env:
+      #     SLACK_COLOR: ${{ job.status }}
+      #     SLACK_TITLE: Resultado Test
+      #     SLACK_MESSAGE: Pruebas exitosas para ${{steps.run_tests.outputs.mix-test}}
+      #     SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+      #     SLACK_FOOTER: 'Tech'
       
-      - name: Send Error Deploy Slack Message
-        continue-on-error: true
-        if: failure()
-        uses: rtCamp/action-slack-notify@v2
-        env:
-          SLACK_COLOR: ${{ job.status }}
-          SLACK_TITLE: Resultado
-          SLACK_MESSAGE: Fallaron las pruebas para ${{steps.run_tests.outputs.mix-test}}
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-          SLACK_FOOTER: 'Tech'
+      # - name: Send Error Deploy Slack Message
+      #   continue-on-error: true
+      #   if: failure()
+      #   uses: rtCamp/action-slack-notify@v2
+      #   env:
+      #     SLACK_COLOR: ${{ job.status }}
+      #     SLACK_TITLE: Resultado
+      #     SLACK_MESSAGE: Fallaron las pruebas para ${{steps.run_tests.outputs.mix-test}}
+      #     SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+      #     SLACK_FOOTER: 'Tech'
 
   # get-pr-link:
   #   runs-on: ubuntu-latest
