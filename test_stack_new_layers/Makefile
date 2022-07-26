@@ -99,14 +99,13 @@ install_requirements:
 	fi
 	@echo -e ${HEADER}"-----------------------------------------"${END};
 	@echo -e ${HEADER}"INSTALANDO LIBRERIAS EN ENTORNO VIRTUAL"${END};
-	@echo -e ${HEADER}"-----------------------------------------"${END};
 	@if ! (${PIP_PATH} --no-cache-dir install -Ur ${LAMBDA_PATH}/core/requirements.txt; ${PIP_PATH} -q install wheel); then \
 		echo -e ${FAIL}"-----------------------------------------"${END}; \
 		echo -e ${FAIL}"[ERROR] ERROR AL INSTALAR LIBRERIAS"${END}; \
 		echo -e ${FAIL}"-----------------------------------------"${END}; \
 		exit 1
 	else \
-		echo -e ${HEADER}"-----------------------------------------"${END}; \
+		echo ""; \
 		echo -e ${OKGREEN}"[OK] LIBRERIAS INSTALADAS CORRECTAMENTE"${END}; \
 	fi
 
@@ -304,10 +303,9 @@ install_aws_layers:
 			fi; \
 		done <<< "$$layers";
 	@echo -e ${OKGREEN}"[OK] LAYERS INSTALADOS CORRECTAMENTE "${END};
-	@echo -e ${HEADER}"-----------------------------------------"${END};
 	else \
+		echo ""; \
 		echo -e ${HEADER}"[INFO] NO HAY LAYERS CONFIGURADOS PARA INSTALAR "${END};
-		echo -e ${HEADER}"-----------------------------------------"${END};
 	fi;
 
 
