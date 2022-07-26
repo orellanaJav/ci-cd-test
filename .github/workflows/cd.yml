@@ -13,7 +13,6 @@ env:
   DEV_REGION: sa-east-1  
   RELEASE_REGION: us-east-1
   PROD_REGION: us-east-1
-  SERVICES_DEPLOYED: ""
 
 
 jobs:
