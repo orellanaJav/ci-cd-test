@@ -1,5 +1,9 @@
 {
     "ENVIRONMENT": {},
-    "LAYERS": [],
+    "LAYERS": [
+        "arn:aws:lambda:sa-east-1:907015885877:layer:layerTestBifr:3",
+        "arn:aws:lambda:sa-east-1:907015885877:layer:layerTest:13",
+        "arn:aws:lambda:sa-east-1:907015885877:layer:test-layer-bifrost:2"
+    ],
     "VPC": {}
 }
