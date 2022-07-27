@@ -1,0 +1,5 @@
+Resources:
+  bucketjociTeststackci:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: bucket-jo-ci-${opt:stage, 'dev'}
