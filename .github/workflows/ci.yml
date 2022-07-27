@@ -72,17 +72,19 @@ jobs:
       - name: Check changed files
         id: diff
         run: |
-          CURRENT_GITHUB_SHA=$GITHUB_SHA
-          BEFORE_GITHUB_SHA=${{ github.event.before }}
-          if [ -z "${{ github.event.before }}" ]; then
-            git checkout dev
-            BEFORE_GITHUB_SHA=${{ github.event.before }}
-            git fetch origin $BEFORE_GITHUB_SHA --depth=1
+          if [ $GITHUB_BASE_REF ]; then
+            # Pull Request
+            git fetch origin $GITHUB_BASE_REF --depth=1
+            export DIFF=$( git diff --name-only origin/$GITHUB_BASE_REF $GITHUB_SHA )
+            echo "Diff between origin/$GITHUB_BASE_REF and $GITHUB_SHA"
+          else
+            # Push
+            git fetch origin ${{ github.event.before }} --depth=1
+            export DIFF=$( git diff --diff-filter=d --name-only ${{ github.event.before }} $GITHUB_SHA )
+            echo "Diff between ${{ github.event.before }} and $GITHUB_SHA"
           fi
-          git fetch origin $BEFORE_GITHUB_SHA --depth=1
-          export DIFF=$( git diff --diff-filter=d --name-only $BEFORE_GITHUB_SHA $CURRENT_GITHUB_SHA )
-          echo "Diff between $BEFORE_GITHUB_SHA and $CURRENT_GITHUB_SHA"
           echo "$DIFF"
+          # Escape newlines (replace \n with %0A)
           echo "::set-output name=diff::$( echo "$DIFF" | sed ':a;N;$!ba;s/\n/%0A/g' )"
       - name: Set matrix for build
         id: filter
