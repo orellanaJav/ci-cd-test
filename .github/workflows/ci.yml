@@ -77,7 +77,13 @@ jobs:
           BEFORE_GITHUB_SHA=${{ github.event.before }}
           export DIFF=$( git diff --diff-filter=d --name-only $BEFORE_GITHUB_SHA $CURRENT_GITHUB_SHA )
           if [ -z "${{ github.event.before }}" ]; then
-            PARENT_BRANCH=$( git log --pretty=format:'%D' HEAD^ | grep 'origin/' | head -n1 | sed 's@origin/@@' | sed 's@,.*@@' )
+            PARENT_BRANCH=$( 
+              git show-branch -a 2>/dev/null \
+              | grep '\*' \
+              | grep -v `git rev-parse --abbrev-ref HEAD` \
+              | head -n1 \
+              | perl -ple 's/\[[A-Za-z]+-\d+\][^\]]+$//; s/^.*\[([^~^\]]+).*$/$1/'
+            )
             echo "El parent branch $PARENT_BRANCH"
             git checkout $PARENT_BRANCH
             BEFORE_GITHUB_SHA=${{ github.event.before }}
