@@ -248,27 +248,27 @@ jobs:
           cd ${{ matrix.stacks.stack_name }}
           npx serverless remove --stage $STAGE
 
-      - name: Send Success Stack Deleted Slack Message
-        continue-on-error: true
-        if: ${{ job.status == 'success' && matrix.stacks.delete_full_stack == true }}
-        uses: rtCamp/action-slack-notify@v2
-        env:
-          SLACK_COLOR: ${{ job.status }}
-          SLACK_TITLE: Resultado
-          SLACK_MESSAGE: Se ha eliminado correctamente el ${{ steps.remove-full-stack.outputs.type }} para el stage *${{ needs.get-stage-and-region.outputs.stage }}*
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-          SLACK_FOOTER: 'Tech'
+      # - name: Send Success Stack Deleted Slack Message
+      #   continue-on-error: true
+      #   if: ${{ job.status == 'success' && matrix.stacks.delete_full_stack == true }}
+      #   uses: rtCamp/action-slack-notify@v2
+      #   env:
+      #     SLACK_COLOR: ${{ job.status }}
+      #     SLACK_TITLE: Resultado
+      #     SLACK_MESSAGE: Se ha eliminado correctamente el ${{ steps.remove-full-stack.outputs.type }} para el stage *${{ needs.get-stage-and-region.outputs.stage }}*
+      #     SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+      #     SLACK_FOOTER: 'Tech'
       
-      - name: Send Error Stack Deleted Slack Message
-        continue-on-error: true
-        if: failure()
-        uses: rtCamp/action-slack-notify@v2
-        env:
-          SLACK_COLOR: ${{ job.status }}
-          SLACK_TITLE: Resultado
-          SLACK_MESSAGE: Ha ocurrido un error al eliminar el ${{ steps.remove-full-stack.outputs.type }} para el stage *${{ needs.get-stage-and-region.outputs.stage }}*
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-          SLACK_FOOTER: 'Tech'
+      # - name: Send Error Stack Deleted Slack Message
+      #   continue-on-error: true
+      #   if: failure()
+      #   uses: rtCamp/action-slack-notify@v2
+      #   env:
+      #     SLACK_COLOR: ${{ job.status }}
+      #     SLACK_TITLE: Resultado
+      #     SLACK_MESSAGE: Ha ocurrido un error al eliminar el ${{ steps.remove-full-stack.outputs.type }} para el stage *${{ needs.get-stage-and-region.outputs.stage }}*
+      #     SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+      #     SLACK_FOOTER: 'Tech'
   
   delete-lambda-service:
     name: Delete Lambda Service
@@ -321,27 +321,27 @@ jobs:
           cd ${{ matrix.lambdas.stack_name }}          
           npx serverless deploy --stage $STAGE
 
-      - name: Send Success Lambda Deleted Slack Message
-        continue-on-error: true
-        if: ${{ job.status == 'success' }}
-        uses: rtCamp/action-slack-notify@v2
-        env:
-          SLACK_COLOR: ${{ job.status }}
-          SLACK_TITLE: Resultado
-          SLACK_MESSAGE: Se ha eliminado correctamente el ${{ steps.remove-lambda.outputs.type }} para el stage *${{ needs.get-stage-and-region.outputs.stage }}*
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-          SLACK_FOOTER: 'Tech'
+      # - name: Send Success Lambda Deleted Slack Message
+      #   continue-on-error: true
+      #   if: ${{ job.status == 'success' }}
+      #   uses: rtCamp/action-slack-notify@v2
+      #   env:
+      #     SLACK_COLOR: ${{ job.status }}
+      #     SLACK_TITLE: Resultado
+      #     SLACK_MESSAGE: Se ha eliminado correctamente el ${{ steps.remove-lambda.outputs.type }} para el stage *${{ needs.get-stage-and-region.outputs.stage }}*
+      #     SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+      #     SLACK_FOOTER: 'Tech'
       
-      - name: Send Error Lambda Deleted Slack Message
-        continue-on-error: true
-        if: failure()
-        uses: rtCamp/action-slack-notify@v2
-        env:
-          SLACK_COLOR: ${{ job.status }}
-          SLACK_TITLE: Resultado
-          SLACK_MESSAGE: Ha ocurrido un error al eliminar el ${{ steps.remove-lambda.outputs.type }} para el stage *${{ needs.get-stage-and-region.outputs.stage }}*
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-          SLACK_FOOTER: 'Tech'
+      # - name: Send Error Lambda Deleted Slack Message
+      #   continue-on-error: true
+      #   if: failure()
+      #   uses: rtCamp/action-slack-notify@v2
+      #   env:
+      #     SLACK_COLOR: ${{ job.status }}
+      #     SLACK_TITLE: Resultado
+      #     SLACK_MESSAGE: Ha ocurrido un error al eliminar el ${{ steps.remove-lambda.outputs.type }} para el stage *${{ needs.get-stage-and-region.outputs.stage }}*
+      #     SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+      #     SLACK_FOOTER: 'Tech'
 
   # get-stage-and-region:
   #   name: Get Stage And Region by Branch

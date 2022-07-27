@@ -248,27 +248,27 @@ jobs:
           npx serverless deploy function -f ${{ matrix.stack.lambda }} --stage $STAGE          
         if: ${{ matrix.stack.fullDeploy == 'false' }}
 
-      - name: Send Success Deploy Slack Message
-        continue-on-error: true
-        if: ${{ job.status == 'success' }}
-        uses: rtCamp/action-slack-notify@v2
-        env:
-          SLACK_COLOR: ${{ job.status }}
-          SLACK_TITLE: Resultado
-          SLACK_MESSAGE: Se ha desplegado correctamente el ${{ steps.deploy-all-stack.outputs.type || steps.deploy-only-function.outputs.type }} para el stage *${{ needs.get-stage-and-region.outputs.stage }}*
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-          SLACK_FOOTER: 'Tech'
+      # - name: Send Success Deploy Slack Message
+      #   continue-on-error: true
+      #   if: ${{ job.status == 'success' }}
+      #   uses: rtCamp/action-slack-notify@v2
+      #   env:
+      #     SLACK_COLOR: ${{ job.status }}
+      #     SLACK_TITLE: Resultado
+      #     SLACK_MESSAGE: Se ha desplegado correctamente el ${{ steps.deploy-all-stack.outputs.type || steps.deploy-only-function.outputs.type }} para el stage *${{ needs.get-stage-and-region.outputs.stage }}*
+      #     SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+      #     SLACK_FOOTER: 'Tech'
       
-      - name: Send Error Deploy Slack Message
-        continue-on-error: true
-        if: failure()
-        uses: rtCamp/action-slack-notify@v2
-        env:
-          SLACK_COLOR: ${{ job.status }}
-          SLACK_TITLE: Resultado
-          SLACK_MESSAGE: No se ha podido desplegar el ${{ steps.deploy-all-stack.outputs.type || steps.deploy-only-function.outputs.type }} para el stage *${{ needs.get-stage-and-region.outputs.stage }}*
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-          SLACK_FOOTER: 'Tech'
+      # - name: Send Error Deploy Slack Message
+      #   continue-on-error: true
+      #   if: failure()
+      #   uses: rtCamp/action-slack-notify@v2
+      #   env:
+      #     SLACK_COLOR: ${{ job.status }}
+      #     SLACK_TITLE: Resultado
+      #     SLACK_MESSAGE: No se ha podido desplegar el ${{ steps.deploy-all-stack.outputs.type || steps.deploy-only-function.outputs.type }} para el stage *${{ needs.get-stage-and-region.outputs.stage }}*
+      #     SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+      #     SLACK_FOOTER: 'Tech'
   
   # Hecho en casa, pero mas lento por ser docker :(
   # send-slack-message:
