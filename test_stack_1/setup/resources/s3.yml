@@ -1,5 +1,0 @@
-Resources:
-  testbucket1flowTeststack1:
-    Type: AWS::S3::Bucket
-    Properties:
-      BucketName: test-bucket-1-flow-${opt:stage, 'dev'}
