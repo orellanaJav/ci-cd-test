@@ -1,0 +1,16 @@
+Resources:
+  testdynamo1flowTeststack1:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: test-dynamo-1-flow
+      AttributeDefinitions:
+        - AttributeName: "PK"
+          AttributeType: "S"
+        - AttributeName: "SK"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "PK"
+          KeyType: "HASH"
+        - AttributeName: "SK"
+          KeyType: "RANGE"
+      BillingMode: PAY_PER_REQUEST
