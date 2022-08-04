@@ -1,0 +1,9 @@
+{
+    "default": {
+        "REGION": "sa-east-1"
+    },
+    "profile": "default",
+    "sso": {
+        "REGION": "us-east-1"
+    }
+}

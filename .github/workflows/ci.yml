@@ -211,31 +211,31 @@ jobs:
           make get_last_version_layers_cd PROFILE=$PROFILE STAGE=$STAGE
           make create_venv LAMBDA=${{ matrix.stack.lambda }}
           make install_requirements LAMBDA=${{ matrix.stack.lambda }}
-          make install_remote_layers LAMBDA=${{ matrix.stack.lambda }} STAGE=${{ needs.get-stage-and-region.outputs.stage }}
+          make install_remote_layers_ci LAMBDA=${{ matrix.stack.lambda }} STAGE=${{ needs.get-stage-and-region.outputs.stage }}
           make run_tests LAMBDA=${{ matrix.stack.lambda }}
           make clean_env LAMBDA=${{ matrix.stack.lambda }}
 
-      - name: Send Success Deploy Slack Message
-        continue-on-error: true
-        if: ${{ job.status == 'success' }}
-        uses: rtCamp/action-slack-notify@v2
-        env:
-          SLACK_COLOR: ${{ job.status }}
-          SLACK_TITLE: Resultado Test
-          SLACK_MESSAGE: Pruebas exitosas para ${{steps.run_tests.outputs.mix-test}}
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-          SLACK_FOOTER: 'Tech'
+      # - name: Send Success Deploy Slack Message
+      #   continue-on-error: true
+      #   if: ${{ job.status == 'success' }}
+      #   uses: rtCamp/action-slack-notify@v2
+      #   env:
+      #     SLACK_COLOR: ${{ job.status }}
+      #     SLACK_TITLE: Resultado Test
+      #     SLACK_MESSAGE: Pruebas exitosas para ${{steps.run_tests.outputs.mix-test}}
+      #     SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+      #     SLACK_FOOTER: 'Tech'
       
-      - name: Send Error Deploy Slack Message
-        continue-on-error: true
-        if: failure()
-        uses: rtCamp/action-slack-notify@v2
-        env:
-          SLACK_COLOR: ${{ job.status }}
-          SLACK_TITLE: Resultado
-          SLACK_MESSAGE: Fallaron las pruebas para ${{steps.run_tests.outputs.mix-test}}
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-          SLACK_FOOTER: 'Tech'
+      # - name: Send Error Deploy Slack Message
+      #   continue-on-error: true
+      #   if: failure()
+      #   uses: rtCamp/action-slack-notify@v2
+      #   env:
+      #     SLACK_COLOR: ${{ job.status }}
+      #     SLACK_TITLE: Resultado
+      #     SLACK_MESSAGE: Fallaron las pruebas para ${{steps.run_tests.outputs.mix-test}}
+      #     SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+      #     SLACK_FOOTER: 'Tech'
 
   # get-pr-link:
   #   runs-on: ubuntu-latest
