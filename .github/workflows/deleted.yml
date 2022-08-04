@@ -227,7 +227,7 @@ jobs:
           restore-keys: |
             node-
 
-     - name: Get profile aws by stage
+      - name: Get profile aws by stage
         if: ${{ matrix.stacks.delete_full_stack == true }}
         id: get-profile-aws
         working-directory: ${{ matrix.stacks.stack_name }}
