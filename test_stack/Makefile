@@ -35,6 +35,7 @@ PROJECT = services/${LAMBDA}
 
 prepare: create_venv install_requirements install_local_layers
 install_remote_layers: create_layers_cache install_aws_layers
+install_remote_layers_ci: create_layers_cache install_aws_layers_ci
 remove_lambda: remove update_serverless_file
 
 # =============================================================================
