@@ -261,6 +261,7 @@ install_aws_layers:
 			if $$(! grep -Fxq "$$layer" ${LAYERS_CACHE_PATH}/layers); then \
 				layer_url=$$(aws lambda \
 					get-layer-version-by-arn \
+					--profile ${PROFILE} \
 					--arn $$layer --query \
 					Content.Location --output text \
 					); \

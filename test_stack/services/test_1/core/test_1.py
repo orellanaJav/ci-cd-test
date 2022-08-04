@@ -1,4 +1,4 @@
-from settings.config import logger
+from test_layer_02.test import test
 
 __version__ = '0.1.0'
 
@@ -25,5 +25,6 @@ def lambda_handler(event: dict, context: dict) -> dict:
     :Created:
         - 2022.08.04
     """
-    logger.basic_loader(**event)
+    result = test()
+    print('value', result)
     return {'status': 'status'}
