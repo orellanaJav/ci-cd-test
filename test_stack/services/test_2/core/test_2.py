@@ -27,5 +27,4 @@ def lambda_handler(event: dict, context: dict) -> dict:
     """
     result = test()
     print('value', result)
-    print('value', result)
     return {'status': 'status'}

@@ -211,7 +211,7 @@ jobs:
           make get_last_version_layers_cd PROFILE=$PROFILE STAGE=$STAGE
           make create_venv LAMBDA=${{ matrix.stack.lambda }}
           make install_requirements LAMBDA=${{ matrix.stack.lambda }}
-          make install_remote_layers LAMBDA=${{ matrix.stack.lambda }} STAGE=${{ needs.get-stage-and-region.outputs.stage }} PROFILE=default
+          make install_remote_layers_ci LAMBDA=${{ matrix.stack.lambda }} STAGE=${{ needs.get-stage-and-region.outputs.stage }}
           make run_tests LAMBDA=${{ matrix.stack.lambda }}
           make clean_env LAMBDA=${{ matrix.stack.lambda }}
 

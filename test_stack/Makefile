@@ -310,6 +310,87 @@ install_aws_layers:
 		echo -e ${HEADER}"[INFO] NO HAY LAYERS CONFIGURADOS PARA INSTALAR "${END};
 	fi;
 
+install_aws_layers_ci:
+	@if test ! -f "${LAYERS_CACHE_PATH}/layers"; then \
+		echo -e ${FAIL}"---------------------------------------------"${END}; \
+		echo -e ${FAIL}"[ERROR] NO SE PUEDEN INSTALAR LAYERS SI EL ARCHIVO DE CACHÉ NO ESTÁ CRREADO"${END}; \
+		echo -e ${FAIL}"---------------------------------------------"${END}; \
+		exit 1
+	fi
+	@if [[ ! "${LAMBDA}" ]]; then \
+		echo -e ${FAIL}"---------------------------------------------"${END}; \
+		echo -e ${FAIL}"[ERROR] DEBES ESPECIFICAR UN LAMBDA"${END}; \
+		echo -e ${FAIL}"---------------------------------------------"${END}; \
+		exit 1
+	fi
+	@if test ! -d "${LAMBDA_PATH}"; then \
+		echo -e ${FAIL}"---------------------------------------------"${END}; \
+		echo -e ${FAIL}"[ERROR] LAMBDA INDICADO NO EXISTE EN EL STACK"${END}; \
+		echo -e ${FAIL}"---------------------------------------------"${END}; \
+		exit 1
+	fi
+	@if test ! -d "${VIRTUALENV}"; then \
+		echo -e ${FAIL}"---------------------------------------------"${END}; \
+		echo -e ${FAIL}"[ERROR] NO EXISTE ENTORNO VIRTUAL CREADO PARA EL LAMBDA INDICADO"${END}; \
+		echo -e ${FAIL}"---------------------------------------------"${END}; \
+		exit 1
+	fi
+	@echo -e ${HEADER}"INSTALANDO LAYERS"${END};
+	@layers="$$(jq -c '(.LAYERS[])' ${LAMBDA_PATH}/setup/${STAGE}/config.json)"
+	@layers="$$(sed -e 's/^"//' -e 's/"$$//' <<<"$$layers")"
+	@if [[ "$$layers" ]]; then \
+		while read -r layer; do \
+			if $$(! grep -Fxq "$$layer" ${LAYERS_CACHE_PATH}/layers); then \
+				layer_url=$$(aws lambda \
+					get-layer-version-by-arn \
+					--arn $$layer --query \
+					Content.Location --output text \
+					); \
+				if [[ ! "$$layer_url" ]]; then \
+					echo -e ${FAIL}"---------------------------------------------"${END}; \
+					echo -e ${FAIL}"[ERROR] NO SE HAN PODIDO OBTENER LOS LAYERS REMOTOS"${END}; \
+					echo -e ${FAIL}"---------------------------------------------"${END}; \
+					exit 1
+				fi
+				if ! echo "$$layer" >> ${LAYERS_CACHE_PATH}/layers; then \
+					echo -e ${FAIL}"---------------------------------------------"${END}; \
+					echo -e ${FAIL}"[ERROR] HA OCURRIDO UN ERROR AL CREAR EL ARCHIVO DE CACHÉ"${END}; \
+					echo -e ${FAIL}"---------------------------------------------"${END}; \
+					exit 1
+				fi
+				if ! curl $$layer_url -o "${SITE_PACKAGES_PATH}/$$layer.zip"; then \
+					echo -e ${FAIL}"---------------------------------------------"${END}; \
+					echo -e ${FAIL}"[ERROR] HA OCURRIDO UN ERROR AL EXTRAER LOS LAYERS A LA CARPETA DE DESTINO"${END}; \
+					echo -e ${FAIL}"---------------------------------------------"${END}; \
+					rm -rf ${LAYERS_CACHE_PATH}/layers
+					exit 1
+				fi
+				if ! unzip -qq "${SITE_PACKAGES_PATH}/$$layer.zip" -d "${SITE_PACKAGES_PATH}/"; then \
+					echo -e ${FAIL}"---------------------------------------------"${END}; \
+					echo -e ${FAIL}"[ERROR] HA OCURRIDO UN ERROR AL DESCOMPRIMIR LOS LAYERS A LA CARPETA DE DESTINO"${END}; \
+					echo -e ${FAIL}"---------------------------------------------"${END}; \
+					rm -rf ${LAYERS_CACHE_PATH}/layers
+					rm -rf ${SITE_PACKAGES_PATH}/$$layer.zip
+					exit 1
+				fi
+				if ! cp -a "${PYTHON_LAYER_PATH}/." ${SITE_PACKAGES_PATH}; then \
+					echo -e ${FAIL}"---------------------------------------------"${END}; \
+					echo -e ${FAIL}"[ERROR] HA OCURRIDO UN ERROR AL INSTALAR LOS LAYERS EN EL ENTORNO VIRTUAL"${END}; \
+					echo -e ${FAIL}"---------------------------------------------"${END}; \
+					rm -rf ${LAYERS_CACHE_PATH}/layers
+					rm -rf ${SITE_PACKAGES_PATH}/$$layer.zip
+					exit 1
+				fi
+				rm -rf "${SITE_PACKAGES_PATH}/$$layer.zip"; \
+				rm -rf ${PYTHON_LAYER_PATH}; \
+			fi; \
+		done <<< "$$layers";
+	@echo -e ${OKGREEN}"[OK] LAYERS INSTALADOS CORRECTAMENTE "${END};
+	else \
+		echo ""; \
+		echo -e ${HEADER}"[INFO] NO HAY LAYERS CONFIGURADOS PARA INSTALAR "${END};
+	fi;
+
 
 # =============================================================================
 # INVOCACIÓN DEL LAMBDA DE FORMA LOCAL
@@ -332,9 +413,9 @@ invoke_local:
 		exit 1
 	fi
 	@if test ! -d "${VIRTUALENV}"; then \
-		echo -e ${FAIL}"----------------------------------------------------------------"${END}; \
+		echo -e ${FAIL}"---------------------------------------------"${END}; \
 		echo -e ${FAIL}"[ERROR] NO EXISTE ENTORNO VIRTUAL CREADO PARA EL LAMBDA INDICADO"${END}; \
-		echo -e ${FAIL}"----------------------------------------------------------------"${END}; \
+		echo -e ${FAIL}"---------------------------------------------"${END}; \
 		exit 1
 	fi
 	@echo -e ${HEADER}"-----------------------------------------"${END};
@@ -367,9 +448,9 @@ invoke_local:
 				fu=open("event.yml", "w");\
 				yaml.dump(y, fu)'
 
-	@echo -e ${HEADER}"-----------------------------------------"${END};
+	@echo -e ${HEADER}"---------------------------------------------"${END};
 	@echo -e ${HEADER}"PRUEBA LOCAL FINALIZADA PARA EL STAGE ${STAGE}"${END};
-	@echo -e ${HEADER}"-----------------------------------------"${END};
+	@echo -e ${HEADER}"---------------------------------------------"${END};
 
 
 # =============================================================================
