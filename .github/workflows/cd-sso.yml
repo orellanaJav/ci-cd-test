@@ -11,7 +11,7 @@ on:
 env:
   DEV_REGION: us-east-1  
   RELEASE_REGION: us-east-1
-  PROD_REGION: us-east-1
+  PROD_REGION: us-west-2
 
 
 jobs:
@@ -31,24 +31,28 @@ jobs:
         run: |
           echo "STAGE=dev" >> $GITHUB_ENV
           echo "REGION=$DEV_REGION" >> $GITHUB_ENV
+          echo "PROFILE_NAME=sso" >> $GITHUB_ENV
         if: ${{ steps.extract_current_branch.outputs.branch == 'dev' }}
 
       - name: Set Region For Crafting
         run: |
           echo "STAGE=dev" >> $GITHUB_ENV
           echo "REGION=$DEV_REGION" >> $GITHUB_ENV
+          echo "PROFILE_NAME=sso" >> $GITHUB_ENV
         if: ${{ steps.extract_current_branch.outputs.branch == 'crafting' }}
 
       - name: Set Region For Release
         run: |
           echo "STAGE=release" >> $GITHUB_ENV
           echo "REGION=$RELEASE_REGION" >> $GITHUB_ENV
+          echo "PROFILE_NAME=default" >> $GITHUB_ENV
         if: ${{ steps.extract_current_branch.outputs.branch == 'release' }}
 
       - name: Set Region For Production
         run: |
           echo "STAGE=prod" >> $GITHUB_ENV
           echo "REGION=$PROD_REGION" >> $GITHUB_ENV
+          echo "PROFILE_NAME=default" >> $GITHUB_ENV
         if: ${{ steps.extract_current_branch.outputs.branch == 'main' }}
 
       - name: Get Stage And Region
@@ -56,8 +60,10 @@ jobs:
         run: |
           STAGE="${{ env.STAGE }}"
           REGION="${{ env.REGION }}"
+          PROFILE_NAME="${{ env.PROFILE_NAME }}"
           echo "::set-output name=stage::$( echo "$STAGE" )"
           echo "::set-output name=region::$( echo "$REGION" )"
+          echo "::set-output name=profile::$( echo "$PROFILE_NAME" )"
 
   stacks:
     name: Get Stacks
@@ -67,17 +73,44 @@ jobs:
       listStacks: ${{ steps.idStacks.outputs.listStacks }}
     steps:
       - uses: actions/checkout@v2
+
+      - name: Configure AWS SSO Credentials Dev Account
+        if: ${{ needs.get-stage-and-region.outputs.stage == 'dev' && needs.get-stage-and-region.outputs.stage.profile == 'sso' }}
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+      
+      - name: Configure AWS SSO Credentials Release Account
+        if: ${{ needs.get-stage-and-region.outputs.stage == 'release' && needs.get-stage-and-region.outputs.stage.profile == 'sso' }}
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_RELEASE }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_RELEASE }}
+          aws-region: ${{ secrets.AWS_REGION_RELEASE }}
+
+      - name: Configure AWS SSO Credentials Prod Account
+        if: ${{ needs.get-stage-and-region.outputs.stage == 'prod' && needs.get-stage-and-region.outputs.stage.profile == 'sso' }}
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_PROD }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_PROD }}
+          aws-region: ${{ secrets.AWS_REGION_PROD }}
+
       - name: Configure AWS Credentials
+        if: ${{ needs.get-stage-and-region.outputs.stage.profile == 'default' }}
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_DEFAULT }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEFAULT }}
-          aws-region: sa-east-1
+          aws-region: ${{ secrets.AWS_REGION_DEFAULT }}
+
       - name: Get Current Stacks
         id: idStacks
         run: |                    
           STAGE="${{ needs.get-stage-and-region.outputs.stage }}"
-          REGION="${{ needs.get-stage-and-region.outputs.region }}"          
+          REGION="${{ needs.get-stage-and-region.outputs.region }}"
           STACKS=$( aws cloudformation list-stacks --region="$REGION" --stack-status-filter CREATE_IN_PROGRESS CREATE_COMPLETE ROLLBACK_IN_PROGRESS ROLLBACK_FAILED ROLLBACK_COMPLETE DELETE_IN_PROGRESS DELETE_FAILED UPDATE_IN_PROGRESS UPDATE_COMPLETE_CLEANUP_IN_PROGRESS UPDATE_COMPLETE UPDATE_ROLLBACK_IN_PROGRESS UPDATE_ROLLBACK_FAILED UPDATE_ROLLBACK_COMPLETE_CLEANUP_IN_PROGRESS UPDATE_ROLLBACK_COMPLETE REVIEW_IN_PROGRESS | jq '.StackSummaries[].StackName')
           JSON="["
           while read stack; do
