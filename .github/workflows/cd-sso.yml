@@ -237,7 +237,7 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION_DEFAULT }}
 
       - name: Setup Python
-        uses: actions/setup-python@v3        
+        uses: actions/setup-python@v3
         with:
           python-version: '3.9'
       
