@@ -1,18 +1,18 @@
-name: Test Deploy New Account
+name: Test Deploy
 
 on:
   push:
-    branches-ignore:
-      - '**'
-    # branches:
-    #   - 'crafting'
-    #   - 'dev'
-    #   - 'main'
-    #   - 'release'
+    # branches-ignore:
+    #   - '**'
+    branches:
+      - 'crafting'
+      - 'dev'
+
 env:
-  DEV_REGION: sa-east-1  
+  DEV_REGION: us-east-1  
   RELEASE_REGION: us-east-1
   PROD_REGION: us-east-1
+
 
 jobs:
   get-stage-and-region:
@@ -41,7 +41,7 @@ jobs:
 
       - name: Set Region For Release
         run: |
-          eecho "STAGE=release" >> $GITHUB_ENV
+          echo "STAGE=release" >> $GITHUB_ENV
           echo "REGION=$RELEASE_REGION" >> $GITHUB_ENV
         if: ${{ steps.extract_current_branch.outputs.branch == 'release' }}
 
@@ -121,37 +121,48 @@ jobs:
           STACKS="${{ needs.stacks.outputs.listStacks }}"
           STAGE="${{ needs.get-stage-and-region.outputs.stage }}"
           REGION="${{ needs.get-stage-and-region.outputs.region }}"
-          MAKE_FULL_DEPLOY=false          
+          MAKE_FULL_DEPLOY=false
+          STACK_FULL_DEPLOY=""
+          echo "$DIFF"
 
           if [ -z "$DIFF" ]; then
             echo "::set-output name=folders::[]"
           else
             JSON="["
             json_stack="["            
-            while read path; do
-              # Set $stack to substring before /
+            while read path; do              
+              lambda=""
+              lambda_mid_dash=""
               stack="$( echo $path | cut -d'/' -f1 -s )"
               stack_mid_dash="$( echo $stack | tr _ - )"
+              stack_cloudfront="$stack_mid_dash-$STAGE"
+              services_path="$( echo $path | cut -d'/' -f2 -s )"
+              echo "$services_path"
+            if [[ "$services_path" == *"services"* ]]; then
               lambda="$( echo $path | cut -d'/' -f3 -s )"
               lambda_mid_dash="$( echo $lambda | tr _ - )"
-              stack_cloudfront="$stack_mid_dash-$lambda_mid_dash-$STAGE"
-
+            fi
 
             # ignore .github folder
 
             if [[ "$stack" != ".github" && "$lambda" != "" ]]; then
               if [[ $STACKS != *"$stack_cloudfront"* ]]; then
                 MAKE_FULL_DEPLOY=true
-              fi                            
-
-              if [[ $path == *"requirements"* ]]; then
-                MAKE_FULL_DEPLOY=true
               fi
-              stack_item="{\"stack_name\":\"$stack\",\"fullDeploy\":\"$MAKE_FULL_DEPLOY\",\"lambda\":\"$lambda\"},"
-                                          
-              if [[ "$json_stack" != *"$stack_item"* ]]; then
-                json_stack="$json_stack$stack_item"
 
+              stack_item="{\"stack_name\":\"$stack\",\"fullDeploy\":\"$MAKE_FULL_DEPLOY\",\"lambda\":\"$lambda\"},"
+
+              if [[ $MAKE_FULL_DEPLOY == 'true' ]]; then
+                if [[ "$STACK_FULL_DEPLOY" != *"$stack"* ]]; then
+                  if [[ "$json_stack" != *"$stack_item"* ]]; then
+                    json_stack="$json_stack$stack_item"
+                  fi
+                  STACK_FULL_DEPLOY="$STACK_FULL_DEPLOY$stack,"
+                fi
+              else
+                if [[ "$json_stack" != *"$stack_item"* ]]; then
+                  json_stack="$json_stack$stack_item"
+                fi
               fi
             fi
             done <<< "$DIFF"
@@ -161,6 +172,7 @@ jobs:
             fi
             json_stack="$json_stack]"
             echo $json_stack
+            echo $STACK_FULL_DEPLOY
 
             echo "::set-output name=stack::$( echo "$json_stack" )"
           fi
@@ -181,80 +193,95 @@ jobs:
           key: node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             node-
-      - name: Configure AWS Credentials
+
+      - name: Get profile aws by stage
+        id: get-profile-aws
+        working-directory: ${{ matrix.stack.stack_name }}
+        run: |
+          STAGE="${{ needs.get-stage-and-region.outputs.stage }}"
+          PROFILE="$( jq -c "(.profile)" setup/stage/${STAGE}.json )"
+          PROFILE="$( sed -e 's/^"//' -e 's/"$//' <<<"$PROFILE" )"
+          echo "El profile es $PROFILE"
+          echo "::set-output name=profile::$( echo "$PROFILE" )"
+
+      - name: Configure AWS SSO Credentials Dev Account
+        if: ${{ needs.get-stage-and-region.outputs.stage == 'dev' && steps.get-profile-aws.outputs.profile == 'sso' }}
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
+      
+      - name: Configure AWS SSO Credentials Release Account
+        if: ${{ needs.get-stage-and-region.outputs.stage == 'release' && steps.get-profile-aws.outputs.profile == 'sso' }}
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_RELEASE }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_RELEASE }}
+          aws-region: ${{ secrets.AWS_REGION_RELEASE }}
+
+      - name: Configure AWS SSO Credentials Prod Account
+        if: ${{ needs.get-stage-and-region.outputs.stage == 'prod' && steps.get-profile-aws.outputs.profile == 'sso' }}
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_PROD }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_PROD }}
+          aws-region: ${{ secrets.AWS_REGION_PROD }}
+
+      - name: Configure AWS Credentials
+        if: ${{ steps.get-profile-aws.outputs.profile == 'default' }}
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_DEFAULT }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEFAULT }}
+          aws-region: ${{ secrets.AWS_REGION_DEFAULT }}
 
       - name: Setup Python
         uses: actions/setup-python@v3        
         with:
           python-version: '3.9'
-
-      - name: Disabled python-requirements plugin
-        if: ${{ matrix.stack.fullDeploy == 'false' }}
-        run: |
-            pwd
-            ls -la
-            cd ${{ matrix.stack.stack_name }}/services/${{ matrix.stack.lambda }}/core
-            pip install pyyaml
-            python3.9 -c """
-            from yaml import dump
-            from yaml import load
-            from yaml import FullLoader
-
-            if __name__ == '__main__':
-                with open('serverless.yml') as file:
-                    resource_data = load(file, Loader=FullLoader)
-                    file.close()                
-                with open('serverless.yml', 'w') as file:
-                    resource_data['plugins'].remove('serverless-python-requirements')
-                    serverless = dump(resource_data, file)        
-                    file.close()                
-            """
       
       - name: Install Dependencies
         run: npm install        
 
       - name: Deploy All Stack
+        id: deploy-all-stack
         working-directory: ${{ matrix.stack.stack_name }}
         run: |
+          echo "::set-output name=type::$( echo "Stack *${{ matrix.stack.stack_name }}*" )"
+          PROFILE="${{ steps.get-profile-aws.outputs.profile }}"
           STAGE="${{ needs.get-stage-and-region.outputs.stage }}"
-          npx serverless deploy --service=${{ matrix.stack.lambda }} --stage $STAGE
+          npx serverless deploy --stage $STAGE --param="profile=$PROFILE"
         if: ${{ matrix.stack.fullDeploy == 'true' }}
       
       - name: Deploy Only Function
-        working-directory: ${{ matrix.stack.stack_name }}/services/${{ matrix.stack.lambda }}/core
+        working-directory: ${{ matrix.stack.stack_name }}
+        id: deploy-only-function
         run: |
+          echo "::set-output name=type::$( echo "Lambda *${{ matrix.stack.lambda }}* del stack *${{ matrix.stack.stack_name }}*" )"
+          PROFILE="${{ steps.get-profile-aws.outputs.profile }}"
           STAGE="${{ needs.get-stage-and-region.outputs.stage }}"          
-          npx serverless deploy -f ${{ matrix.stack.lambda }} --stage $STAGE
-
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          npx serverless deploy function -f ${{ matrix.stack.lambda }} --stage $STAGE --param="profile=$PROFILE"
         if: ${{ matrix.stack.fullDeploy == 'false' }}
 
-  send-slack-message:
-    runs-on: ubuntu-latest
-    needs: ["deploy"]
-    steps:
-      - uses: actions/checkout@v2
-      - name: send a slack message
-        uses: ./.github/actions/slack
-        with:
-          slack_webhook: ${{ secrets.SLACK_WEBHOOK }}
-          message: Despliegue realizado correctamente
-          title: Despliegue
-
-  send-slack-message-error:
-    runs-on: ubuntu-latest
-    needs: ["deploy"]
-    steps:
-      - uses: actions/checkout@v2
-      - name: send a slack message
-        uses: ./.github/actions/slack
-        with:
-          slack_webhook: ${{ secrets.SLACK_WEBHOOK }}
-          message: Despliegue realizado correctamente
+      # - name: Send Success Deploy Slack Message
+      #   continue-on-error: true
+      #   if: ${{ job.status == 'success' }}
+      #   uses: rtCamp/action-slack-notify@v2
+      #   env:
+      #     SLACK_COLOR: ${{ job.status }}
+      #     SLACK_TITLE: Resultado
+      #     SLACK_MESSAGE: Se ha desplegado correctamente el ${{ steps.deploy-all-stack.outputs.type || steps.deploy-only-function.outputs.type }} para el stage *${{ needs.get-stage-and-region.outputs.stage }}*
+      #     SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+      #     SLACK_FOOTER: 'Tech'
+      
+      # - name: Send Error Deploy Slack Message
+      #   continue-on-error: true
+      #   if: failure()
+      #   uses: rtCamp/action-slack-notify@v2
+      #   env:
+      #     SLACK_COLOR: ${{ job.status }}
+      #     SLACK_TITLE: Resultado
+      #     SLACK_MESSAGE: No se ha podido desplegar el ${{ steps.deploy-all-stack.outputs.type || steps.deploy-only-function.outputs.type }} para el stage *${{ needs.get-stage-and-region.outputs.stage }}*
+      #     SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+      #     SLACK_FOOTER: 'Tech'
