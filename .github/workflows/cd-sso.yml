@@ -21,6 +21,7 @@ jobs:
     outputs:
       region: ${{ steps.stage-and-region.outputs.region }}
       stage: ${{ steps.stage-and-region.outputs.stage }}
+      profile: ${{ steps.stage-and-region.outputs.profile }}
     steps:
       - name: Get Current Branch
         shell: bash
