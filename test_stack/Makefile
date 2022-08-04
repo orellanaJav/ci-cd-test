@@ -704,6 +704,7 @@ help:
 	@echo '                           lambda definido.'
 	@echo '                           * Parametros:'
 	@echo '                             - LAMBDA=lambda_del_stack'
+	@echo '                             - PROFILE=profile_de_la_cuenta'
 	@echo ''
 	@echo 'install_local_layers     - Se encarga de instalar layers locales en el'
 	@echo '                           entorno virtual local. Para instalarlos, es'
