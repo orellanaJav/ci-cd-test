@@ -1,0 +1,16 @@
+test_4:
+  description: test 4
+  environment: ${file(services/test_4/setup/${opt:stage, 'dev'}/config.json):ENVIRONMENT}
+  layers: ${file(services/test_4/setup/${opt:stage, 'dev'}/config.json):LAYERS}
+  handler: test_4.lambda_handler
+  module: services/test_4/core
+  name: test-stack-test_4
+  tags:
+    stack_name: test-stack
+    lambda_name: test_4
+  package:
+    patterns:
+      - '!./**'
+      - 'services/test_4/**'
+      - '!services/test_4/core/resources/*.yml'
+      - '!services/test_4/core/requirements.txt'
