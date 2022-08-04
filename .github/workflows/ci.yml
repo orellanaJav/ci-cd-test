@@ -1,13 +1,11 @@
 name: Test CI
 on:
   pull_request:
-    branches-ignore:
-      - '**'
-    # branches:
-    #  - 'dev'
-    #  - 'release'
-    #  - 'main'
-    #  - 'crafting'
+    # branches-ignore:
+    #   - '**'
+    branches:
+     - 'dev'
+     - 'crafting'
 
 env:
   DEV_REGION: sa-east-1  
