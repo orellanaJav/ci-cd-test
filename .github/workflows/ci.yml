@@ -137,12 +137,49 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Configure AWS Credentials
+
+      - name: Get profile aws by stage
+        id: get-profile-aws
+        working-directory: ${{ matrix.stack.stack_name }}
+        run: |
+          STAGE="${{ needs.get-stage-and-region.outputs.stage }}"
+          PROFILE="$( jq -c "(.profile)" setup/stage/${STAGE}.json )"
+          PROFILE="$( sed -e 's/^"//' -e 's/"$//' <<<"$PROFILE" )"
+          echo "El profile es $PROFILE"
+          echo "::set-output name=profile::$( echo "$PROFILE" )"
+
+      - name: Configure AWS SSO Credentials Dev Account
+        if: ${{ needs.get-stage-and-region.outputs.stage == 'dev' && steps.get-profile-aws.outputs.profile == 'sso' }}
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ needs.get-stage-and-region.outputs.region }}
+          aws-region: ${{ secrets.AWS_REGION }}
+      
+      - name: Configure AWS SSO Credentials Release Account
+        if: ${{ needs.get-stage-and-region.outputs.stage == 'release' && steps.get-profile-aws.outputs.profile == 'sso' }}
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_RELEASE }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_RELEASE }}
+          aws-region: ${{ secrets.AWS_REGION_RELEASE }}
+
+      - name: Configure AWS SSO Credentials Prod Account
+        if: ${{ needs.get-stage-and-region.outputs.stage == 'prod' && steps.get-profile-aws.outputs.profile == 'sso' }}
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_PROD }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_PROD }}
+          aws-region: ${{ secrets.AWS_REGION_PROD }}
+
+      - name: Configure AWS Credentials
+        if: ${{ steps.get-profile-aws.outputs.profile == 'default' }}
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_DEFAULT }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEFAULT }}
+          aws-region: ${{ secrets.AWS_REGION_DEFAULT }}
+
       - name: Setup Python
         uses: actions/setup-python@v3        
         with:
@@ -171,6 +208,9 @@ jobs:
         id: run_tests
         run: |
           echo "::set-output name=mix-test::$( echo "lambda *${{ matrix.stack.lambda }}* del stack *${{ matrix.stack.stack_name }}*" )"
+          PROFILE="${{ steps.get-profile-aws.outputs.profile }}"
+          STAGE="${{ needs.get-stage-and-region.outputs.stage }}"
+          make get_last_version_layers_cd PROFILE=$PROFILE STAGE=$STAGE
           make create_venv LAMBDA=${{ matrix.stack.lambda }}
           make install_requirements LAMBDA=${{ matrix.stack.lambda }}
           make install_remote_layers LAMBDA=${{ matrix.stack.lambda }} STAGE=${{ needs.get-stage-and-region.outputs.stage }}

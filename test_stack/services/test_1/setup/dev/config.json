@@ -1,8 +1,0 @@
-{
-  "ENVIRONMENT": {},
-  "LAYERS": [
-    "arn:aws:lambda:sa-east-1:907015885877:layer:test_layer_02:1",
-    "arn:aws:lambda:sa-east-1:907015885877:layer:test_layer_03:1"
-  ],
-  "VPC": {}
-}

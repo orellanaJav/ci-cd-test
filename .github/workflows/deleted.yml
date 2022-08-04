@@ -400,7 +400,8 @@ jobs:
           STAGE="${{ needs.get-stage-and-region.outputs.stage }}"
           REGION="${{ needs.get-stage-and-region.outputs.region }}"
           PROFILE="${{ steps.get-profile-aws.outputs.profile }}"
-          cd ${{ matrix.lambdas.stack_name }}          
+          cd ${{ matrix.lambdas.stack_name }}
+          make get_last_version_layers_cd PROFILE=$PROFILE STAGE=$STAGE
           npx serverless deploy --stage $STAGE --param="profile=$PROFILE"
 
       - name: Send Success Lambda Deleted Slack Message
