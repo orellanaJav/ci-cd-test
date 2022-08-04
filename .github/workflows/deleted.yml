@@ -232,6 +232,7 @@ jobs:
         id: get-profile-aws
         working-directory: ${{ matrix.stacks.stack_name }}
         run: |
+          git checkout ${{ github.event.before }}
           STAGE="${{ needs.get-stage-and-region.outputs.stage }}"
           PROFILE="$( jq -c "(.profile)" setup/stage/${STAGE}.json )"
           PROFILE="$( sed -e 's/^"//' -e 's/"$//' <<<"$PROFILE" )"
